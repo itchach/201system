@@ -469,7 +469,7 @@ app.get('/api/sections/:id/students', requireAuth, requireAdmin, async (req, res
         gf.id as generated_file_id,
         gf.file_name,
         gf.file_size,
-        COALESCE(gf.created_at, gf.generated_at) as sif_created_at
+        gf.generated_at as sif_created_at
       FROM students s
       LEFT JOIN generated_files gf ON s.id = gf.student_id
       WHERE s.section_id = ?
@@ -495,7 +495,7 @@ app.get('/api/student/info', requireAuth, async (req, res) => {
   const userEmail = (req.session.user.email || '').toLowerCase();
   try {
     const student = await getOne(`
-      SELECT s.*, sec.name as section_name, gf.id as generated_file_id, gf.file_name, COALESCE(gf.created_at, gf.generated_at) as sif_generated_at
+      SELECT s.*, sec.name as section_name, gf.id as generated_file_id, gf.file_name, gf.generated_at as sif_generated_at
       FROM students s
       LEFT JOIN sections sec ON s.section_id = sec.id
       LEFT JOIN generated_files gf ON s.id = gf.student_id
@@ -549,27 +549,22 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
 
   try {
     // 1. Verify that Section exists and is ACTIVE
-    const section = await getOne('SELECT * FROM sections WHERE id = ? AND status = "active"', [sectionId]);
+    const section = await getOne('SELECT * FROM sections WHERE id = ? AND status = ?', [sectionId, 'active']);
     if (!section) {
       return res.status(400).json({ error: 'Selected section is invalid or inactive.' });
     }
 
-    // 2. Check or create/update student record strictly tied to logged-in user
+    // 2. Check or create/update student record
     let student = await getOne(
-      'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ? OR student_id = ?',
-      [userId, user.email.toLowerCase(), studentId.trim()]
+      'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ?',
+      [userId, user.email.toLowerCase()]
     );
 
-    if (!student) {
-      const insert = await execute(`
-        INSERT INTO students (user_id, student_id, first_name, middle_name, last_name, section_id, email)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email]);
-      student = await getOne('SELECT * FROM students WHERE id = ?', [insert.insertId]);
-    } else {
-      // IDOR Protection: If student record exists but is registered to a DIFFERENT user, reject
-      if (student.user_id && student.user_id !== userId && req.session.user.role !== 'admin') {
-        return res.status(403).json({ error: 'You do not have permission to modify this student record.' });
+    if (student) {
+      // Check if studentId is being changed to one that already exists on another student
+      const conflict = await getOne('SELECT id FROM students WHERE student_id = ? AND id != ?', [studentId.trim(), student.id]);
+      if (conflict) {
+        return res.status(400).json({ error: `Student ID "${studentId.trim()}" is already assigned to another student.` });
       }
 
       await execute(`
@@ -578,6 +573,26 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
         WHERE id = ?
       `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, student.id]);
       student = await getOne('SELECT * FROM students WHERE id = ?', [student.id]);
+    } else {
+      // Check if an unlinked student record exists with this student_id
+      const existingByStudentId = await getOne('SELECT * FROM students WHERE student_id = ?', [studentId.trim()]);
+      if (existingByStudentId) {
+        if (existingByStudentId.user_id && existingByStudentId.user_id !== userId) {
+          return res.status(400).json({ error: `Student ID "${studentId.trim()}" is already registered to another account.` });
+        }
+        await execute(`
+          UPDATE students
+          SET user_id = ?, first_name = ?, middle_name = ?, last_name = ?, section_id = ?, email = ?
+          WHERE id = ?
+        `, [userId, firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, existingByStudentId.id]);
+        student = await getOne('SELECT * FROM students WHERE id = ?', [existingByStudentId.id]);
+      } else {
+        const insert = await execute(`
+          INSERT INTO students (user_id, student_id, first_name, middle_name, last_name, section_id, email)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email]);
+        student = await getOne('SELECT * FROM students WHERE id = ?', [insert.insertId]);
+      }
     }
 
     // 3. Save student_information (JSON)
@@ -617,7 +632,7 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('Error submitting SIF form:', err);
-    res.status(500).json({ error: 'Failed to process submission.' });
+    res.status(500).json({ error: err.message || 'Failed to process submission.' });
   }
 });
 
@@ -642,7 +657,7 @@ app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
       gf.id as generated_file_id,
       gf.file_name,
       gf.file_size,
-      COALESCE(gf.created_at, gf.generated_at) as sif_created_at
+      gf.generated_at as sif_created_at
     FROM students s
     LEFT JOIN sections sec ON s.section_id = sec.id
     LEFT JOIN generated_files gf ON s.id = gf.student_id

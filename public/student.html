@@ -1023,10 +1023,13 @@
         await loadStudentData();
         submitBtn.disabled = false;
         submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
-        showTab('sifTab');
+        
+        // Switch to SIF Preview Tab and activate nav tab
+        const sifNavBtn = document.querySelector('button[onclick*="sifTab"]');
+        showTab('sifTab', sifNavBtn);
       } catch (err) {
         console.error('Submit error:', err);
-        App.showToast('Network error during form submission.', 'error');
+        App.showToast('Error: ' + (err.message || 'Network error during form submission.'), 'error');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
       }

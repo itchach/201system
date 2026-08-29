@@ -21,6 +21,10 @@ const DEFAULT_TEMPLATE_PATH = path.join(TEMPLATES_DIR, 'Student_Personal_Informa
  * perfectly proportioned and distributed to maximize full page usage.
  */
 async function ensureDefaultTemplate() {
+  if (fs.existsSync(DEFAULT_TEMPLATE_PATH)) {
+    return DEFAULT_TEMPLATE_PATH;
+  }
+
   const pdfDoc = await PDFDocument.create();
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -590,7 +594,7 @@ async function generateStudentSIF(studentRecord, formData, sectionName) {
   fs.writeFileSync(filePath, pdfBytes);
 
   return {
-    filePath: path.relative(path.join(__dirname, '..'), filePath),
+    filePath: path.relative(path.join(__dirname, '..'), filePath).replace(/\\/g, '/'),
     fileName,
     fileSize: pdfBytes.length,
     templateId: activeTemplate ? activeTemplate.id : 1
