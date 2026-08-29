@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Anti-caching: prevents data from being cached on shared school computers -->
+  <meta http-equiv="Cache-Control" content="private, no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Admin Portal — 201-FILE Management System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Admin Specific Styling Enhancements */
+    .hero-banner {
+      background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 2rem 2.25rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(6, 78, 59, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(255,255,255,0) 70%);
+      border-radius: var(--radius-full);
+      pointer-events: none;
+    }
+    .hero-content h2 {
+      color: #ffffff;
+      font-size: 1.85rem;
+      margin-bottom: 0.4rem;
+    }
+    .hero-content p {
+      color: #d1fae5;
+      font-size: 0.95rem;
+      max-width: 600px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .hero-btn-white {
+      background: #ffffff;
+      color: #064e3b;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .hero-btn-white:hover {
+      background: #f0fdf4;
+      color: #047857;
+      transform: translateY(-2px);
+    }
+    .hero-btn-trans {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+    }
+    .hero-btn-trans:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+    .folder-icon-wrapper {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+    }
+    .student-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-full);
+      background: #e2e8f0;
+      color: #334155;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-right: 0.6rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/admin.html" class="brand">
+        <div class="brand-logo" title="Olivarez College">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>OLIVAREZ COLLEGE</h1>
+          <p>College of Computer Studies • 201-FILE Digital Filing</p>
+        </div>
+      </a>
+
+      <ul class="nav-tabs">
+        <li><button class="nav-link active" onclick="showTab('dashboardTab', this)">📊 Dashboard</button></li>
+        <li><button class="nav-link" onclick="showTab('sectionsTab', this)">📁 Dynamic Sections</button></li>
+        <li><button class="nav-link" onclick="showTab('studentsTab', this)">🎓 Students & 201-FILEs</button></li>
+        <li><button class="nav-link" onclick="showTab('templateTab', this)">📑 201-FILE Template</button></li>
+        <li><button class="nav-link" onclick="showTab('usersTab', this)">👥 Authorized Users</button></li>
+      </ul>
+
+      <div class="user-profile">
+        <div class="user-avatar-badge">
+          <div class="avatar-circle">AD</div>
+          <div class="user-badge">
+            <span class="name" id="navAdminName">Administrator</span>
+            <span class="role-badge" id="navAdminEmail">admin@school.edu.ph</span>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="App.logout()">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- 1. DASHBOARD TAB -->
+    <div id="dashboardTab" class="tab-pane">
+      
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <h2>201-FILE Management</h2>
+          <p>Organize, generate, and manage Olivarez College Student Information Files dynamically by section.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn hero-btn-white" onclick="openAddSectionModal()">+ Create Section</button>
+          <button class="btn hero-btn-trans" onclick="showTab('studentsTab')">Search Student 201-FILEs</button>
+        </div>
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card emerald">
+          <div class="kpi-icon green">📁</div>
+          <div class="kpi-info">
+            <h3 id="statTotalSections">0</h3>
+            <p>Active Sections</p>
+          </div>
+        </div>
+
+        <div class="kpi-card blue">
+          <div class="kpi-icon blue">🎓</div>
+          <div class="kpi-info">
+            <h3 id="statTotalStudents">0</h3>
+            <p>Enrolled Students</p>
+          </div>
+        </div>
+
+        <div class="kpi-card amber">
+          <div class="kpi-icon amber">📄</div>
+          <div class="kpi-info">
+            <h3 id="statTotalSifs">0</h3>
+            <p>Generated 201-FILE Files</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Summary Table -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h3 style="font-size: 1.25rem;">Section Digital Filing Cabinets</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Overview of student registrations and generated PDF files filed under each section</p>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="showTab('sectionsTab')">Manage All Sections →</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Section Cabinet</th>
+                <th>Enrolled Students</th>
+                <th>Generated 201-FILE PDFs</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardSectionsTbody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sections...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SECTIONS TAB -->
+    <div id="sectionsTab" class="tab-pane" style="display: none;">
+      <div class="page-header">
+        <div>
+          <h2>Dynamic Section Management</h2>
+          <p>Create and organize sections. Sections created here automatically become available in the student web form.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddSectionModal()">+ Add New Section</button>
+      </div>
+
+      <!-- Section Filing Cabinet Cards -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h3 style="font-size: 1.25rem;">Section Filing Cabinet Folders</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Click any folder to view and download all student 201-FILEs organized under that section</p>
+          </div>
+          <div style="display: flex; gap: 0.4rem;">
+            <button class="btn btn-sm btn-secondary" onclick="filterSectionGrid('all')">All</button>
+            <button class="btn btn-sm btn-secondary" onclick="filterSectionGrid('active')">Active</button>
+            <button class="btn btn-sm btn-secondary" onclick="filterSectionGrid('archived')">Archived</button>
+          </div>
+        </div>
+
+        <div class="section-grid" id="sectionsFolderGrid">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Section Table with Edit & Archive Actions -->
+      <div class="card">
+        <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">All Sections Directory</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Section Name</th>
+                <th>Status</th>
+                <th>Enrolled Students</th>
+                <th>201-FILE Files</th>
+                <th>Created At</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sectionsTableTbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. STUDENTS DIRECTORY TAB -->
+    <div id="studentsTab" class="tab-pane" style="display: none;">
+      <div class="page-header">
+        <div>
+          <h2>Student Records & 201-FILE Files</h2>
+          <p>Search, view official 2-page BSIT 201-FILE PDFs, download files, and reassign student sections.</p>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="card" style="padding: 1.25rem;">
+        <div class="search-box">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              id="studentSearchInput" 
+              class="form-control" 
+              placeholder="Search by Student ID, Name, or School Email..."
+              oninput="debouncedSearchStudents()"
+            >
+          </div>
+
+          <div style="min-width: 200px;">
+            <select id="studentSectionFilter" class="form-control" onchange="loadStudents()">
+              <option value="all">All Sections</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="loadStudents()">Search</button>
+        </div>
+      </div>
+
+      <!-- Students Table -->
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>School Email</th>
+                <th>Filing Section</th>
+                <th>Generated 201-FILE File</th>
+                <th>Date Generated</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableTbody">
+              <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. SIF TEMPLATE & MAPPINGS TAB -->
+    <div id="templateTab" class="tab-pane" style="display: none;">
+      <div class="page-header">
+        <div>
+          <h2>201-FILE PDF Template & Field Mapping</h2>
+          <p>Configure official school PDF templates and mapping rules for automated generation.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openUploadTemplateModal()">📤 Upload Custom Template</button>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Active School PDF Template</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Default official template: <strong>Olivarez College - College of Computer Studies - Student's Personal Information Sheet (BSIT)</strong>
+        </p>
+
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+          <a href="/api/files/template/1/view" target="_blank" class="btn btn-secondary">👁  View Blank Template PDF</a>
+          <span class="badge badge-success">High-Fidelity 2-Page AcroForm Stamping Active</span>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Template Name</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Uploaded By</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody id="templatesTableTbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Field Mapping Guidelines -->
+      <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Field Mapping Architecture</h3>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">
+          The system automatically maps web form inputs (Personal Info, Parents, Educational Background, Emergency Contacts) onto the official PDF fields. 
+          <strong>Section is preserved as internal file-management metadata</strong> and is not inserted into the PDF unless explicitly mapped.
+        </p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Web Form Input</th>
+                <th>Target PDF Location</th>
+                <th>Page</th>
+                <th>Mapping Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Student ID</strong></td><td>student_id / Header metadata</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Full Name (Last, First, Middle)</strong></td><td>NAME (Last Name) (First Name) (Middle Name)</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Addresses & Contacts</strong></td><td>City Address, Provincial Address, Landline, Mobile</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Personal Demographics</strong></td><td>Age, Gender, Civil Status, Nationality, Religion, Birthdate</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Ordinal Position & Siblings</strong></td><td>Checkboxes (1st..4th Child), Boy/s, Girl/s</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Father & Mother Information</strong></td><td>Occupations, Addresses, Educational Attainment, Contacts</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Educational Background</strong></td><td>College (Transferee), High School, Elementary</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Emergency Contact</strong></td><td>Name & Relationship, Complete Address, Contact Numbers</td><td>Page 2</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr style="background: #f8fafc;">
+                <td><strong>Section (e.g. 2B, 5A)</strong></td>
+                <td><em>Internal Directory Storage: uploads/sifs/{section}/</em></td>
+                <td>—</td>
+                <td><span class="badge badge-secondary">File Organization Metadata (Unmapped)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. USERS MANAGEMENT TAB -->
+    <div id="usersTab" class="tab-pane" style="display: none;">
+      <div class="page-header">
+        <div>
+          <h2>Authorized School Accounts</h2>
+          <p>Authorize school Google Workspace accounts and manage role permissions.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddUserModal()">+ Add Authorized User</button>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>School Email</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Account Status</th>
+                <th>Added Date</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableTbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Add Section Modal -->
+  <div class="modal-backdrop" id="addSectionModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>+ Create Dynamic Section</h3>
+        <button class="modal-close" onclick="App.closeModal('addSectionModal')">&times;</button>
+      </div>
+      <form onsubmit="handleCreateSection(event)">
+        <div class="modal-body">
+          <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            When you create a section, it will immediately appear in the student web form and organize future 201-FILE PDFs under this section folder.
+          </p>
+          <div class="form-group">
+            <label class="form-label required" for="newSectionName">Section Name</label>
+            <input type="text" id="newSectionName" class="form-control" placeholder="e.g. 5A or BSIT-3B" required autofocus>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('addSectionModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Section</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Edit Section Modal -->
+  <div class="modal-backdrop" id="editSectionModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Edit Section Name</h3>
+        <button class="modal-close" onclick="App.closeModal('editSectionModal')">&times;</button>
+      </div>
+      <form onsubmit="handleUpdateSection(event)">
+        <div class="modal-body">
+          <input type="hidden" id="editSectionId">
+          <div class="form-group">
+            <label class="form-label required" for="editSectionName">Section Name</label>
+            <input type="text" id="editSectionName" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('editSectionModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Move Student Section Modal (Requirement #7) -->
+  <div class="modal-backdrop" id="moveStudentModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Move Student Section</h3>
+        <button class="modal-close" onclick="App.closeModal('moveStudentModal')">&times;</button>
+      </div>
+      <form onsubmit="handleMoveStudent(event)">
+        <div class="modal-body">
+          <input type="hidden" id="moveStudentId">
+          <p id="moveStudentDesc" style="font-size: 0.95rem; margin-bottom: 1.25rem; font-weight: 500;"></p>
+          <div class="form-group">
+            <label class="form-label required" for="moveTargetSectionId">New Section</label>
+            <select id="moveTargetSectionId" class="form-control" required></select>
+          </div>
+          <div style="background: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); font-size: 0.825rem; color: var(--text-muted);">
+            ℹ <strong>Requirement Rule:</strong> Moving a student updates the student record. Historical PDFs remain unchanged unless explicitly regenerated.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('moveStudentModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Move Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Section Drilldown Modal (View all students in section) -->
+  <div class="modal-backdrop" id="sectionViewModal">
+    <div class="modal-dialog" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 id="sectionViewTitle">Section Students</h3>
+        <button class="modal-close" onclick="App.closeModal('sectionViewModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>201-FILE Document</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sectionStudentsTbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModal('sectionViewModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Add User Modal -->
+  <div class="modal-backdrop" id="addUserModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>+ Add Authorized School Account</h3>
+        <button class="modal-close" onclick="App.closeModal('addUserModal')">&times;</button>
+      </div>
+      <form onsubmit="handleAddUser(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label required" for="newUserEmail">School Google Workspace Email</label>
+            <input type="email" id="newUserEmail" class="form-control" placeholder="student@olivarezcollege.edu.ph" required>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Only <strong>@olivarezcollege.edu.ph</strong> accounts are permitted. Personal Gmail accounts are not allowed.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="newUserName">Full Name</label>
+            <input type="text" id="newUserName" class="form-control" placeholder="Juan Dela Cruz" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="newUserRole">Role</label>
+            <select id="newUserRole" class="form-control">
+              <option value="student">Student</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('addUserModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. Upload PDF Template Modal -->
+  <div class="modal-backdrop" id="uploadTemplateModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Upload Official PDF Template</h3>
+        <button class="modal-close" onclick="App.closeModal('uploadTemplateModal')">&times;</button>
+      </div>
+      <form onsubmit="handleUploadTemplate(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label required" for="templateName">Template Name</label>
+            <input type="text" id="templateName" class="form-control" placeholder="e.g. Olivarez BSIT 201-FILE 2026" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="templateVersion">Version</label>
+            <input type="text" id="templateVersion" class="form-control" value="1.0">
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="templateFile">PDF File (.pdf)</label>
+            <input type="file" id="templateFile" class="form-control" accept=".pdf" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('uploadTemplateModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Upload Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. SIF Preview Modal -->
+  <div class="modal-backdrop" id="sifPreviewModal">
+    <div class="modal-dialog" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 id="previewModalTitle">Official 201-FILE Document Preview</h3>
+        <button class="modal-close" onclick="App.closeModal('sifPreviewModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="pdf-preview-box" style="height: 580px;">
+          <iframe id="previewIframe" src="" title="201-FILE Preview"></iframe>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="previewDownloadBtn" href="#" class="btn btn-primary">⬇ Download PDF</a>
+        <button type="button" class="btn btn-secondary" onclick="App.closeModal('sifPreviewModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    let allSections = [];
+    let searchDebounceTimeout = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await App.checkAuth();
+      if (!auth.user) {
+        window.location.href = '/index.html';
+        return;
+      }
+      if (auth.user.role !== 'admin') {
+        window.location.href = '/student.html';
+        return;
+      }
+
+      document.getElementById('navAdminName').textContent = auth.user.name;
+      document.getElementById('navAdminEmail').textContent = auth.user.email;
+
+      await loadDashboard();
+      await loadSections();
+      await loadStudents();
+      await loadTemplates();
+      await loadUsers();
+
+      // Back-navigation protection for shared computers
+      history.pushState(null, '', window.location.href);
+      window.addEventListener('popstate', () => {
+        history.pushState(null, '', window.location.href);
+      });
+
+      // 30-minute inactivity timeout
+      startInactivityTimer();
+    });
+
+    // ===== ADMIN INACTIVITY TIMEOUT =====
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
+    const WARNING_BEFORE = 60 * 1000;
+    let inactivityTimer = null;
+    let warningTimer = null;
+    let countdownInterval = null;
+
+    // Inject inactivity modal if not already present
+    if (!document.getElementById('adminInactivityModal')) {
+      const modal = document.createElement('div');
+      modal.id = 'adminInactivityModal';
+      modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.7);z-index:9999;align-items:center;justify-content:center;';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;padding:2rem 2.25rem;max-width:420px;width:90%;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.2);">
+          <div style="font-size:2.5rem;margin-bottom:0.75rem">⏰</div>
+          <h3 style="color:#b45309;font-size:1.25rem;margin-bottom:0.5rem">Session Expiring Soon</h3>
+          <p style="color:#64748b;margin-bottom:1rem;font-size:0.9rem">Your admin session will expire due to inactivity. You will be signed out in:</p>
+          <span id="adminInactivityCountdown" style="font-size:2.5rem;font-weight:800;color:#dc2626;display:block;margin-bottom:1rem">60</span>
+          <div style="display:flex;gap:0.75rem;justify-content:center;">
+            <button class="btn btn-primary" onclick="resetAdminInactivity()">Stay Signed In</button>
+            <button class="btn btn-secondary" onclick="App.logout()">Sign Out Now</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function startInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      clearTimeout(warningTimer);
+      clearInterval(countdownInterval);
+      const modal = document.getElementById('adminInactivityModal');
+      if (modal) modal.style.display = 'none';
+
+      warningTimer = setTimeout(() => {
+        showAdminInactivityWarning();
+      }, INACTIVITY_TIMEOUT - WARNING_BEFORE);
+
+      inactivityTimer = setTimeout(() => {
+        clearInterval(countdownInterval);
+        App.logout();
+      }, INACTIVITY_TIMEOUT);
+    }
+
+    function showAdminInactivityWarning() {
+      const modal = document.getElementById('adminInactivityModal');
+      const countdown = document.getElementById('adminInactivityCountdown');
+      if (!modal || !countdown) return;
+      let seconds = 60;
+      countdown.textContent = seconds;
+      modal.style.display = 'flex';
+      countdownInterval = setInterval(() => {
+        seconds--;
+        countdown.textContent = seconds;
+        if (seconds <= 0) clearInterval(countdownInterval);
+      }, 1000);
+    }
+
+    function resetAdminInactivity() {
+      startInactivityTimer();
+    }
+
+    ['click', 'keypress', 'mousemove', 'scroll', 'touchstart'].forEach(evt => {
+      document.addEventListener(evt, () => {
+        const modal = document.getElementById('adminInactivityModal');
+        if (!modal || modal.style.display === 'none') startInactivityTimer();
+      }, { passive: true });
+    });
+    // ===== END ADMIN INACTIVITY TIMEOUT =====
+
+    function showTab(tabId, btn) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(tabId).style.display = 'block';
+      if (btn) btn.classList.add('active');
+
+      if (tabId === 'dashboardTab') loadDashboard();
+      if (tabId === 'sectionsTab') loadSections();
+      if (tabId === 'studentsTab') loadStudents();
+      if (tabId === 'templateTab') loadTemplates();
+      if (tabId === 'usersTab') loadUsers();
+    }
+
+    // ================= DASHBOARD =================
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/dashboard/stats');
+        const data = await res.json();
+
+        document.getElementById('statTotalSections').textContent = data.totalSections;
+        document.getElementById('statTotalStudents').textContent = data.totalStudents;
+        document.getElementById('statTotalSifs').textContent = data.totalSifs;
+
+        const tbody = document.getElementById('dashboardSectionsTbody');
+        if (!data.sections || data.sections.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No sections found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.sections.map(s => `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="folder-icon-wrapper">📁</div>
+                <div>
+                  <strong style="font-size: 1.05rem;">Section ${s.name}</strong>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Cabinet Folder</div>
+                </div>
+              </div>
+            </td>
+            <td><strong>${s.student_count}</strong> student${s.student_count === 1 ? '' : 's'}</td>
+            <td>
+              <span class="badge ${s.sif_count > 0 ? 'badge-success' : 'badge-secondary'}">
+                📄 ${s.sif_count} SIF PDF${s.sif_count === 1 ? '' : 's'}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${s.status === 'active' ? 'badge-success' : 'badge-secondary'}">
+                ${s.status.toUpperCase()}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <button class="btn btn-sm btn-secondary" onclick="viewSectionFiles(${s.id}, '${s.name}')">View Cabinet Files</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      }
+    }
+
+    // ================= SECTIONS =================
+    async function loadSections() {
+      try {
+        const res = await fetch('/api/sections');
+        allSections = await res.json();
+
+        renderSectionFolders(allSections);
+        renderSectionsTable(allSections);
+        populateSectionDropdowns(allSections);
+      } catch (err) {
+        console.error('Error loading sections:', err);
+      }
+    }
+
+    function populateSectionDropdowns(sections) {
+      const active = sections.filter(s => s.status === 'active');
+      
+      const filterSelect = document.getElementById('studentSectionFilter');
+      filterSelect.innerHTML = '<option value="all">All Sections</option>';
+      active.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `Section ${s.name}`;
+        filterSelect.appendChild(opt);
+      });
+
+      const moveSelect = document.getElementById('moveTargetSectionId');
+      moveSelect.innerHTML = '';
+      active.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `Section ${s.name}`;
+        moveSelect.appendChild(opt);
+      });
+    }
+
+    function renderSectionFolders(sections) {
+      const grid = document.getElementById('sectionsFolderGrid');
+      if (!sections || sections.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-muted); padding: 1.5rem;">No sections found.</p>';
+        return;
+      }
+
+      grid.innerHTML = sections.map(s => `
+        <div class="section-folder-card" onclick="viewSectionFiles(${s.id}, '${s.name}')">
+          <div class="section-folder-header">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.5rem;">📁</span>
+              <h3>${s.name}</h3>
+            </div>
+            <span class="badge ${s.status === 'active' ? 'badge-success' : 'badge-secondary'}">
+              ${s.status}
+            </span>
+          </div>
+          <div class="section-stats">
+            <div class="section-stats-row">
+              <span>Students:</span>
+              <strong>${s.student_count}</strong>
+            </div>
+            <div class="section-stats-row">
+              <span>201-FILE Files:</span>
+              <strong>${s.sif_count}</strong>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSectionsTable(sections) {
+      const tbody = document.getElementById('sectionsTableTbody');
+      tbody.innerHTML = sections.map(s => `
+        <tr>
+          <td><strong style="font-size: 1.05rem;">Section ${s.name}</strong></td>
+          <td>
+            <span class="badge ${s.status === 'active' ? 'badge-success' : 'badge-secondary'}">
+              ${s.status.toUpperCase()}
+            </span>
+          </td>
+          <td><strong>${s.student_count}</strong> enrolled</td>
+          <td><strong>${s.sif_count}</strong> generated</td>
+          <td>${new Date(s.created_at).toLocaleDateString()}</td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="btn btn-sm btn-secondary" onclick="openEditSectionModal(${s.id}, '${s.name}')">Rename</button>
+            <button class="btn btn-sm ${s.status === 'active' ? 'btn-secondary' : 'btn-primary'}" onclick="toggleSectionStatus(${s.id}, '${s.status === 'active' ? 'archived' : 'active'}')">
+              ${s.status === 'active' ? 'Archive' : 'Reactivate'}
+            </button>
+            <button class="btn btn-sm btn-secondary" onclick="viewSectionFiles(${s.id}, '${s.name}')">View Files</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterSectionGrid(status) {
+      if (status === 'all') {
+        renderSectionFolders(allSections);
+      } else {
+        renderSectionFolders(allSections.filter(s => s.status === status));
+      }
+    }
+
+    function openAddSectionModal() {
+      document.getElementById('newSectionName').value = '';
+      App.openModal('addSectionModal');
+    }
+
+    async function handleCreateSection(e) {
+      e.preventDefault();
+      const name = document.getElementById('newSectionName').value;
+
+      try {
+        const res = await fetch('/api/sections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to create section', 'error');
+          return;
+        }
+
+        App.showToast(`Section ${name.toUpperCase()} created successfully! ✓`);
+        App.closeModal('addSectionModal');
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error creating section', 'error');
+      }
+    }
+
+    function openEditSectionModal(id, name) {
+      document.getElementById('editSectionId').value = id;
+      document.getElementById('editSectionName').value = name;
+      App.openModal('editSectionModal');
+    }
+
+    async function handleUpdateSection(e) {
+      e.preventDefault();
+      const id = document.getElementById('editSectionId').value;
+      const name = document.getElementById('editSectionName').value;
+
+      try {
+        const res = await fetch(`/api/sections/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to update section', 'error');
+          return;
+        }
+
+        App.showToast('Section name updated! ✓');
+        App.closeModal('editSectionModal');
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error updating section', 'error');
+      }
+    }
+
+    async function toggleSectionStatus(id, newStatus) {
+      try {
+        const res = await fetch(`/api/sections/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to change status', 'error');
+          return;
+        }
+
+        App.showToast(`Section marked as ${newStatus} ✓`);
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error', 'error');
+      }
+    }
+
+    async function viewSectionFiles(sectionId, sectionName) {
+      try {
+        const res = await fetch(`/api/sections/${sectionId}/students`);
+        const data = await res.json();
+
+        document.getElementById('sectionViewTitle').textContent = `Section ${sectionName} — Student Files Cabinet`;
+        const tbody = document.getElementById('sectionStudentsTbody');
+
+        if (!data.students || data.students.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No student submissions under this section yet.</td></tr>';
+        } else {
+          tbody.innerHTML = data.students.map(s => `
+            <tr>
+              <td><strong>${s.student_id || '—'}</strong></td>
+              <td>${s.last_name}, ${s.first_name}</td>
+              <td>
+                ${s.generated_file_id ? `<span class="badge badge-success">📄 ${s.file_name}</span>` : '<span class="badge badge-secondary">Pending Submission</span>'}
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                ${s.generated_file_id ? `
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')">👁   View</button>
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary">⬇ Download</a>
+                  <button class="btn btn-sm btn-danger" onclick="removeSectionFile(${s.generated_file_id}, '${s.file_name}', ${sectionId}, '${sectionName}')">🗑 Remove</button>
+                ` : '—'}
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        App.openModal('sectionViewModal');
+      } catch (err) {
+        App.showToast('Error loading section files', 'error');
+      }
+    }
+
+    async function removeSectionFile(fileId, fileName, sectionId, sectionName) {
+      if (!confirm(`Are you sure you want to remove the file "${fileName}" from Section ${sectionName}?`)) return;
+
+      try {
+        const res = await fetch(`/api/files/sif/${fileId}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to remove file', 'error');
+          return;
+        }
+
+        App.showToast(data.message || 'File removed successfully! ✓');
+        await viewSectionFiles(sectionId, sectionName);
+        await loadSections();
+        await loadDashboard();
+        await loadStudents();
+      } catch (err) {
+        App.showToast('Network error removing file', 'error');
+      }
+    }
+
+    async function removeStudentFile(fileId, fileName) {
+      if (!confirm(`Are you sure you want to remove the file "${fileName}"?`)) return;
+
+      try {
+        const res = await fetch(`/api/files/sif/${fileId}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to remove file', 'error');
+          return;
+        }
+
+        App.showToast(data.message || 'File removed successfully! ✓');
+        await loadStudents();
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error removing file', 'error');
+      }
+    }
+
+    async function deleteStudentRecord(studentId, studentName) {
+      if (!confirm(`Are you sure you want to completely remove student record "${studentName}"? This will delete all their submissions and generated files.`)) return;
+
+      try {
+        const res = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to delete student', 'error');
+          return;
+        }
+
+        App.showToast(data.message || 'Student record deleted! ✓');
+        await loadStudents();
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error deleting student', 'error');
+      }
+    }
+
+    // ================= STUDENTS DIRECTORY =================
+    function debouncedSearchStudents() {
+      clearTimeout(searchDebounceTimeout);
+      searchDebounceTimeout = setTimeout(() => {
+        loadStudents();
+      }, 300);
+    }
+
+    async function loadStudents() {
+      const query = document.getElementById('studentSearchInput').value;
+      const sectionId = document.getElementById('studentSectionFilter').value;
+
+      try {
+        const res = await fetch(`/api/students?query=${encodeURIComponent(query)}&sectionId=${encodeURIComponent(sectionId)}`);
+        const students = await res.json();
+
+        const tbody = document.getElementById('studentsTableTbody');
+        if (!students || students.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching student records found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = students.map(s => {
+          const initials = ((s.first_name || '')[0] || '') + ((s.last_name || '')[0] || '');
+          return `
+            <tr>
+              <td><strong>${s.student_id || '—'}</strong></td>
+              <td>
+                <div style="display: flex; align-items: center;">
+                  <span class="student-avatar">${initials || 'ST'}</span>
+                  <div>
+                    <strong>${s.last_name}, ${s.first_name}</strong>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${s.middle_name || ''}</div>
+                  </div>
+                </div>
+              </td>
+              <td>${s.email}</td>
+              <td><span class="badge badge-primary">Section ${s.section_name || 'Unassigned'}</span></td>
+              <td>
+                ${s.generated_file_id ? `
+                  <a href="javascript:void(0)" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" style="font-weight: 600; color: var(--primary);">
+                    📄 ${s.file_name}
+                  </a>
+                ` : '<span class="badge badge-warning">Pending</span>'}
+              </td>
+              <td>${s.sif_created_at ? new Date(s.sif_created_at).toLocaleDateString() : '—'}</td>
+              <td style="text-align: right; white-space: nowrap;">
+                ${s.generated_file_id ? `
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE">⬇</a>
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE">👁</button>
+                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File from Section">🗑</button>
+                ` : ''}
+                <button class="btn btn-sm btn-secondary" onclick="openMoveStudentModal(${s.id}, '${s.first_name} ${s.last_name}', ${s.section_id})" title="Move Section">⇄ Move</button>
+                <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Regenerate SIF PDF">↺</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">✕</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error searching students:', err);
+      }
+    }
+
+    function openMoveStudentModal(studentId, studentName, currentSectionId) {
+      document.getElementById('moveStudentId').value = studentId;
+      document.getElementById('moveStudentDesc').innerHTML = `Select target section for student <strong>${studentName}</strong>:`;
+      document.getElementById('moveTargetSectionId').value = currentSectionId || '';
+      App.openModal('moveStudentModal');
+    }
+
+    async function handleMoveStudent(e) {
+      e.preventDefault();
+      const id = document.getElementById('moveStudentId').value;
+      const sectionId = document.getElementById('moveTargetSectionId').value;
+
+      try {
+        const res = await fetch(`/api/students/${id}/section`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sectionId })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to move student', 'error');
+          return;
+        }
+
+        App.showToast('Student section updated successfully! ✓');
+        App.closeModal('moveStudentModal');
+        await loadStudents();
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error moving student', 'error');
+      }
+    }
+
+    async function regenerateStudentPDF(studentId) {
+      if (!confirm('Regenerate SIF PDF for this student under their current section?')) return;
+
+      try {
+        const res = await fetch(`/api/students/${studentId}/regenerate-pdf`, { method: 'POST' });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to regenerate PDF', 'error');
+          return;
+        }
+
+        App.showToast(data.message || 'SIF PDF regenerated! ✓');
+        await loadStudents();
+        await loadSections();
+        await loadDashboard();
+      } catch (err) {
+        App.showToast('Network error regenerating PDF', 'error');
+      }
+    }
+
+    function previewSIF(fileId, fileName) {
+      document.getElementById('previewModalTitle').textContent = `Official SIF: ${fileName}`;
+      document.getElementById('previewIframe').src = `/api/files/sif/${fileId}/view`;
+      document.getElementById('previewDownloadBtn').href = `/api/files/sif/${fileId}/download`;
+      App.openModal('sifPreviewModal');
+    }
+
+    // ================= TEMPLATES =================
+    async function loadTemplates() {
+      try {
+        const res = await fetch('/api/templates');
+        const templates = await res.json();
+
+        const tbody = document.getElementById('templatesTableTbody');
+        tbody.innerHTML = templates.map(t => `
+          <tr>
+            <td><strong style="font-size: 1rem;">${t.name}</strong></td>
+            <td><span class="badge badge-secondary">v${t.version}</span></td>
+            <td><span class="badge badge-success">${t.is_active ? 'Active Default' : 'Inactive'}</span></td>
+            <td>${t.uploaded_by}</td>
+            <td>${new Date(t.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading templates:', err);
+      }
+    }
+
+    function openUploadTemplateModal() {
+      App.openModal('uploadTemplateModal');
+    }
+
+    async function handleUploadTemplate(e) {
+      e.preventDefault();
+      const name = document.getElementById('templateName').value;
+      const version = document.getElementById('templateVersion').value;
+      const fileInput = document.getElementById('templateFile');
+
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('version', version);
+      formData.append('templateFile', fileInput.files[0]);
+
+      try {
+        const res = await fetch('/api/templates/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to upload template', 'error');
+          return;
+        }
+
+        App.showToast('Template uploaded successfully! ✓');
+        App.closeModal('uploadTemplateModal');
+        await loadTemplates();
+      } catch (err) {
+        App.showToast('Network error uploading template', 'error');
+      }
+    }
+
+    // ================= USERS MANAGEMENT =================
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const users = await res.json();
+
+        const tbody = document.getElementById('usersTableTbody');
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td><strong>${u.email}</strong></td>
+            <td>${u.name}</td>
+            <td><span class="badge ${u.role === 'admin' ? 'badge-primary' : 'badge-secondary'}">${u.role.toUpperCase()}</span></td>
+            <td><span class="badge ${u.status === 'active' ? 'badge-success' : 'badge-danger'}">${u.status.toUpperCase()}</span></td>
+            <td>${new Date(u.created_at).toLocaleDateString()}</td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button class="btn btn-sm ${u.status === 'active' ? 'btn-secondary' : 'btn-primary'}" onclick="toggleUserStatus(${u.id}, '${u.status === 'active' ? 'inactive' : 'active'}')">
+                ${u.status === 'active' ? 'Deactivate' : 'Activate'}
+              </button>
+              <button class="btn btn-sm btn-secondary" onclick="toggleUserRole(${u.id}, '${u.role === 'admin' ? 'student' : 'admin'}')">
+                Make ${u.role === 'admin' ? 'Student' : 'Admin'}
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Remove</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Error loading users:', err);
+      }
+    }
+
+    function openAddUserModal() {
+      document.getElementById('newUserEmail').value = '';
+      document.getElementById('newUserName').value = '';
+      App.openModal('addUserModal');
+    }
+
+    async function handleAddUser(e) {
+      e.preventDefault();
+      const email = document.getElementById('newUserEmail').value;
+      const name = document.getElementById('newUserName').value;
+      const role = document.getElementById('newUserRole').value;
+
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name, role })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to add user', 'error');
+          return;
+        }
+
+        App.showToast('Authorized user added! ✓');
+        App.closeModal('addUserModal');
+        await loadUsers();
+      } catch (err) {
+        App.showToast('Network error adding user', 'error');
+      }
+    }
+
+    async function toggleUserStatus(id, status) {
+      try {
+        const res = await fetch(`/api/users/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to change user status', 'error');
+          return;
+        }
+
+        App.showToast(`User status updated to ${status} ✓`);
+        await loadUsers();
+      } catch (err) {
+        App.showToast('Network error updating user status', 'error');
+      }
+    }
+
+    async function toggleUserRole(id, role) {
+      try {
+        const res = await fetch(`/api/users/${id}/role`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to change role', 'error');
+          return;
+        }
+
+        App.showToast(`User role updated to ${role} ✓`);
+        await loadUsers();
+      } catch (err) {
+        App.showToast('Network error updating user role', 'error');
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Are you sure you want to remove authorization for this school account?')) return;
+
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to remove user', 'error');
+          return;
+        }
+
+        App.showToast('User removed! ✓');
+        await loadUsers();
+      } catch (err) {
+        App.showToast('Network error deleting user', 'error');
+      }
+    }
+  </script>
+</body>
+</html>
+

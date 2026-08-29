@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student's Personal Information Sheet (BSIT) - Olivarez College</title>
+  <style>
+    @page {
+      size: letter portrait;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      color: #000;
+      background-color: #e8e8e8;
+      font-size: 8.5pt;
+      line-height: 1.25;
+    }
+
+    .page {
+      width: 8.5in;
+      height: 11in;
+      margin: 20px auto;
+      padding: 0.5in 0.55in 0.45in 0.55in;
+      background-color: #fff;
+      position: relative;
+      page-break-after: always;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    @media print {
+      body {
+        background-color: #fff;
+      }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        height: 11in;
+        max-height: 11in;
+        page-break-after: always;
+      }
+    }
+
+    /* Header styling */
+    .header-container {
+      position: relative;
+      text-align: center;
+      margin-bottom: 10px;
+      min-height: 1.32in;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-right: 1.3in;
+    }
+
+    .school-name {
+      font-size: 14pt;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .school-address {
+      font-size: 8.5pt;
+      color: #222;
+      margin-bottom: 2px;
+    }
+
+    .school-accreditation {
+      font-size: 8pt;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .college-name {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .form-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #000;
+    }
+
+    /* 2x2 Photo Box */
+    .photo-box {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 1.18in;
+      height: 1.32in;
+      border: 1px dashed #777;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #777;
+      background-color: #fff;
+    }
+
+    .photo-box .dim {
+      font-size: 7.5pt;
+      margin-bottom: 3px;
+    }
+
+    .photo-box .label {
+      font-size: 8pt;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* Section Header Banner */
+    .section-banner {
+      width: 100%;
+      background-color: #559c2b;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 9.5pt;
+      padding: 3.5px 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      letter-spacing: 0.2px;
+    }
+
+    /* Section I: Personal Information */
+    .field-row {
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 6px;
+      font-size: 8.5pt;
+      font-weight: 700;
+    }
+
+    .field-label {
+      white-space: nowrap;
+      margin-right: 4px;
+      font-weight: 700;
+      font-size: 8.5pt;
+      color: #000;
+    }
+
+    .line-fill {
+      flex: 1;
+      border-bottom: 1px solid #000;
+      height: 13px;
+    }
+
+    .name-row-container {
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 4px;
+    }
+
+    .name-cols-wrapper {
+      display: flex;
+      flex: 1;
+      gap: 12px;
+    }
+
+    .name-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .name-line {
+      width: 100%;
+      border-bottom: 1px solid #000;
+      height: 13px;
+    }
+
+    .sub-caption {
+      font-size: 7.5pt;
+      font-weight: 400;
+      color: #000;
+      margin-top: 1px;
+    }
+
+    .checkbox-item {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 14px;
+      font-weight: 700;
+      font-size: 8.5pt;
+      white-space: nowrap;
+    }
+
+    .checkbox-box {
+      width: 9.5px;
+      height: 9.5px;
+      border: 1.2px solid #000;
+      margin-right: 4px;
+      display: inline-block;
+      background: #fff;
+    }
+
+    .underline-inline {
+      display: inline-block;
+      border-bottom: 1px solid #000;
+      height: 13px;
+      vertical-align: bottom;
+    }
+
+    /* Tables */
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 3px;
+      margin-bottom: 5px;
+      font-size: 8pt;
+    }
+
+    .form-table td, .form-table th {
+      border: 1px solid #000;
+      padding: 2.2px 6px;
+      height: 18px;
+      vertical-align: middle;
+    }
+
+    .form-table .col-label {
+      width: 28%;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 8pt;
+      color: #000;
+    }
+
+    .form-table .col-value {
+      width: 72%;
+    }
+
+    .form-table .subhead-green {
+      background-color: #d7ebb8;
+      text-align: center;
+      font-weight: 700;
+      font-size: 8pt;
+      text-transform: uppercase;
+      padding: 2px 4px;
+      color: #000;
+    }
+
+    .parent-status-group {
+      margin-top: 5px;
+      font-size: 8pt;
+      line-height: 1.4;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .status-label {
+      font-weight: 700;
+      width: 155px;
+      font-size: 8pt;
+      color: #000;
+    }
+
+    .status-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .indent-options {
+      margin-left: 155px;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 2px;
+    }
+
+    /* Page 2 Specific */
+    .emergency-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8pt;
+    }
+
+    .emergency-table th {
+      border: 1px solid #000;
+      text-align: left;
+      font-weight: 700;
+      padding: 3.5px 6px;
+      font-size: 8pt;
+      text-transform: uppercase;
+      color: #000;
+    }
+
+    .emergency-table td {
+      border: 1px solid #000;
+      padding: 3px 6px;
+      height: 20px;
+      vertical-align: middle;
+    }
+
+    .emergency-table .em-label {
+      width: 28%;
+      font-weight: 700;
+      font-size: 8pt;
+      text-transform: uppercase;
+      color: #000;
+    }
+
+    .emergency-table .em-val {
+      width: 72%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div class="page">
+    <!-- Header -->
+    <div class="header-container">
+      <div class="school-name">OLIVAREZ COLLEGE</div>
+      <div class="school-address">Dr. A. Santos Avenue, Sucat Road, Parañaque City</div>
+      <div class="school-accreditation">PAASCU/PACUCOA Accredited</div>
+      <div class="college-name">College of Computer Studies</div>
+      <div class="form-title">Student's Personal Information Sheet (BSIT)</div>
+
+      <div class="photo-box">
+        <div class="dim">2" x 2"</div>
+        <div class="label">PHOTO</div>
+      </div>
+    </div>
+
+    <!-- Section I: Personal Information -->
+    <div class="section-banner">I. Personal Information</div>
+
+    <div class="name-row-container">
+      <span class="field-label" style="padding-bottom: 12px;">NAME:</span>
+      <div class="name-cols-wrapper">
+        <div class="name-col">
+          <div class="name-line"></div>
+          <span class="sub-caption">(Last Name)</span>
+        </div>
+        <div class="name-col">
+          <div class="name-line"></div>
+          <span class="sub-caption">(First Name)</span>
+        </div>
+        <div class="name-col">
+          <div class="name-line"></div>
+          <span class="sub-caption">(Middle Name)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">CITY ADDRESS:</span>
+      <div class="line-fill"></div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">PROVINCIAL ADDRESS:</span>
+      <div class="line-fill"></div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">LANDLINE #:</span>
+      <div class="line-fill" style="flex: 1.1; margin-right: 20px;"></div>
+      <span class="field-label">MOBILE #:</span>
+      <div class="line-fill" style="flex: 1.1;"></div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">AGE:</span>
+      <div class="line-fill" style="width: 45px; flex: none; margin-right: 12px;"></div>
+      <span class="field-label">GENDER:</span>
+      <div class="line-fill" style="width: 65px; flex: none; margin-right: 12px;"></div>
+      <span class="field-label">CIVIL STATUS:</span>
+      <div class="line-fill" style="width: 75px; flex: none; margin-right: 12px;"></div>
+      <span class="field-label">NATIONALITY:</span>
+      <div class="line-fill" style="width: 75px; flex: none; margin-right: 12px;"></div>
+      <span class="field-label">RELIGION:</span>
+      <div class="line-fill" style="flex: 1;"></div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">ORDINAL POSITION:</span>
+      <div class="checkbox-item"><span class="checkbox-box"></span> 1st CHILD</div>
+      <div class="checkbox-item"><span class="checkbox-box"></span> 2nd CHILD</div>
+      <div class="checkbox-item"><span class="checkbox-box"></span> 3rd CHILD</div>
+      <div class="checkbox-item"><span class="checkbox-box"></span> 4th CHILD</div>
+      <div style="display: inline-flex; align-items: flex-end;">
+        <span class="underline-inline" style="width: 65px; margin-right: 4px;"></span> CHILD
+      </div>
+    </div>
+
+    <div class="field-row">
+      <span class="field-label">NUMBER OF SIBLINGS:</span>
+      <div class="line-fill" style="width: 45px; flex: none; margin-right: 14px;"></div>
+      <span class="field-label">BOY/S:</span>
+      <div class="line-fill" style="width: 45px; flex: none; margin-right: 14px;"></div>
+      <span class="field-label">GIRL/S:</span>
+      <div class="line-fill" style="width: 45px; flex: none; margin-right: 14px;"></div>
+      <span class="field-label">BIRTHDATE:</span>
+      <div class="line-fill" style="width: 95px; flex: none; margin-right: 14px;"></div>
+      <span class="field-label">YEAR LEVEL:</span>
+      <div class="line-fill" style="flex: 1;"></div>
+    </div>
+
+    <!-- Section II: Parent's Information -->
+    <div class="section-banner">II. Parent's Information</div>
+
+    <table class="form-table">
+      <tr>
+        <td class="col-label">FATHER'S INFORMATION</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">OCCUPATION</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">COMPANY ADDRESS</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">EDUCATIONAL ATTAINMENT</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">CONTACT NUMBER</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">MOTHER'S INFORMATION</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">OCCUPATION</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">COMPANY ADDRESS</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">EDUCATIONAL ATTAINMENT</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label">CONTACT NUMBER</td>
+        <td class="col-value"></td>
+      </tr>
+    </table>
+
+    <div class="parent-status-group">
+      <div class="status-row">
+        <div class="status-label">PARENT'S STATUS:</div>
+        <div class="status-options">
+          <div class="checkbox-item"><span class="checkbox-box"></span> LIVING TOGETHER</div>
+          <div class="checkbox-item"><span class="checkbox-box"></span> SEPARATED</div>
+          <div class="checkbox-item"><span class="checkbox-box"></span> RE-MARRIED</div>
+          <div class="checkbox-item"><span class="checkbox-box"></span> WIDOW</div>
+        </div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-label">LIVING APARTMENT:</div>
+        <div class="status-options">
+          <div class="checkbox-item"><span class="checkbox-box"></span> LIVING WITH PARENTS</div>
+          <div class="checkbox-item"><span class="checkbox-box"></span> LIVING WITH RELATIVES</div>
+        </div>
+      </div>
+
+      <div class="indent-options">
+        <div class="checkbox-item"><span class="checkbox-box"></span> LIVING IN DORMITORY</div>
+        <div class="checkbox-item"><span class="checkbox-box"></span> OTHER ARRANGEMENT</div>
+      </div>
+
+      <div class="field-row" style="margin-top: 4px;">
+        <span class="field-label" style="font-size: 8pt;">LANGUAGE/S OR DIALECT/S SPOKEN AT HOME:</span>
+        <div class="line-fill"></div>
+      </div>
+    </div>
+
+    <!-- Section III: Educational Background -->
+    <div class="section-banner">III. Educational Background</div>
+
+    <table class="form-table" style="margin-bottom: 0;">
+      <tr>
+        <th colspan="2" class="subhead-green">COLLEGE (IF TRANSFEREE FROM OTHER SCHOOL)</th>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Name of School Last Attended</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Address of School Last Attended</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Course Last Taken</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <th colspan="2" class="subhead-green">HIGH SCHOOL</th>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Name of School Last Attended</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Address of School Last Attended</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <th colspan="2" class="subhead-green">ELEMENTARY</th>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Name of School Last Attended</td>
+        <td class="col-value"></td>
+      </tr>
+      <tr>
+        <td class="col-label" style="font-weight: 700; text-transform: none;">Address of School Last Attended</td>
+        <td class="col-value"></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page">
+    <table class="emergency-table">
+      <thead>
+        <tr>
+          <th colspan="2">PERSON TO BE NOTIFIED IN CASE OF EMERGENCY</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="em-label">NAME & RELATIONSHIP</td>
+          <td class="em-val"></td>
+        </tr>
+        <tr>
+          <td class="em-label">COMPLETE ADDRESS</td>
+          <td class="em-val"></td>
+        </tr>
+        <tr>
+          <td class="em-label">CONTACT NUMBER/S</td>
+          <td class="em-val"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Variables & Secrets
+.env
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Temporary & Scratch Files
+*.tmp
+set_admin.js
+clean_dev_ids.js
+fix_users.js
+bypass_test.js
+security_test.js
+
+# Private application data
+data/
+uploads/
+
+# Local configuration / credentials
+config/*.local
+config/*secret*
+config/*credentials*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
