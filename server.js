@@ -33,6 +33,9 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID || undefined);
   }
 })();
 
+// Determine environment before any middleware that depends on it
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Security Headers Middleware
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -41,21 +44,46 @@ app.use((req, res, next) => {
   next();
 });
 
+// ── CRITICAL: Trust Render's reverse proxy so Express sees HTTPS ──
+// Without this, secure:true cookies are silently dropped because Express
+// sees the connection as plain HTTP (the proxy terminates TLS before it
+// reaches the Node process). MUST be set before cookieSession.
+if (isProduction) {
+  app.set('trust proxy', 1);
+  console.log('[CONFIG] trust proxy = 1 (production)');
+}
+
 // Middleware
-app.use(cors({ origin: true, credentials: true }));
+// Frontend and API share the same Render domain, so CORS is same-origin.
+// We still mount cors() for any potential cross-origin preflight, but only
+// allow the known production and development origins.
+const allowedOrigins = [
+  'https://two01system.onrender.com',
+  'http://localhost:3000'
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Secure Cookie Session
-const isProduction = process.env.NODE_ENV === 'production';
 app.use(
   cookieSession({
     name: 'oc_sif_session',
-    keys: [process.env.SESSION_SECRET || 'olivarez_college_201_system_secure_secret_key_2026'],
+    // Use the Render environment variable; fall back to dev-only default.
+    // Set SESSION_SECRET in Render dashboard for production!
+    keys: [process.env.SESSION_SECRET || 'dev_only_fallback_change_in_production'],
     maxAge: 24 * 60 * 60 * 1000, // 24 hours max cookie life
-    httpOnly: true,              // Prevent client-side JS theft
-    sameSite: 'lax',             // CSRF protection
-    secure: isProduction         // HTTPS in production
+    httpOnly: true,              // Prevent client-side JS access
+    sameSite: 'lax',             // CSRF protection (lax works with GIS redirect)
+    secure: isProduction         // HTTPS only in production (requires trust proxy)
   })
 );
 
@@ -233,6 +261,9 @@ app.post('/api/auth/google', async (req, res) => {
     };
     req.session.lastActivity = Date.now();
 
+    // Diagnostic log — helps trace the POST→GET session round-trip on Render
+    console.log('[AUTH] Session created:', !!req.session, req.session?.user?.email, '| secure:', isProduction, '| proto:', req.protocol);
+
     res.json({
       message: 'Authentication successful',
       user: req.session.user
@@ -251,6 +282,8 @@ app.post('/api/auth/google', async (req, res) => {
 
 // Get Current User Profile & Role (Protected)
 app.get('/api/auth/me', requireAuth, async (req, res) => {
+  // Diagnostic log — confirms the session cookie was correctly sent back
+  console.log('[AUTH/ME] Session:', !!req.session, req.session?.user?.email, '| proto:', req.protocol);
   try {
     const user = await getOne('SELECT id, google_id, email, name, role, status FROM users WHERE id = ?', [req.session.user.id]);
     if (!user || user.status !== 'active') {

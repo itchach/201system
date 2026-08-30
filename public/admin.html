@@ -632,6 +632,15 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await App.checkAuth();
+
+      // auth.error === true means a network/server error — do NOT kick to login
+      if (auth.error) {
+        console.error('[Admin] checkAuth returned a server/network error. Staying on page.');
+        document.getElementById('navAdminName').textContent = 'Error — please reload';
+        return;
+      }
+
+      // auth.user === null means a genuine 401 from the server
       if (!auth.user) {
         window.location.href = '/index.html';
         return;

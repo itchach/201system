@@ -3,22 +3,49 @@
 const App = {
   currentUser: null,
 
+  /**
+   * Check whether the current user has an active session.
+   *
+   * Returns:
+   *  { user: {...} }       — authenticated
+   *  { user: null }        — not authenticated (genuine 401)
+   *  { user: undefined, error: true } — server error / network failure
+   *    → callers should NOT redirect to login on this; it may be transient.
+   */
   async checkAuth() {
     try {
-      const res = await fetch('/api/auth/me');
+      // credentials: 'include' ensures the session cookie is attached.
+      // Same-origin requests send cookies automatically, but being explicit
+      // is safer on hosted platforms (e.g. Render) where the browser may
+      // treat the cookie as third-party in some edge cases.
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+
+      if (res.status === 401) {
+        // Genuine "not logged in" response from the server
+        this.currentUser = null;
+        return { user: null };
+      }
+
+      if (!res.ok) {
+        // Server error (5xx) or unexpected status — do NOT redirect to login
+        console.warn('[App.checkAuth] Unexpected status:', res.status);
+        return { user: undefined, error: true };
+      }
+
       const data = await res.json();
       this.currentUser = data.user;
       return data;
     } catch (err) {
-      console.error('Auth check error:', err);
-      return { user: null };
+      // Network failure — do NOT redirect to login; server may be starting up
+      console.error('[App.checkAuth] Network error:', err);
+      return { user: undefined, error: true };
     }
   },
 
   async logout() {
     try {
       // 1. Destroy server session
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
 
       // 2. Revoke Google Sign-In session so shared-computer users
       //    must re-authenticate with Google on next visit
