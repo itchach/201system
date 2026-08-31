@@ -3,29 +3,50 @@ const mysql = require('mysql2/promise');
 const path = require('path');
 const fs = require('fs');
 
-const DB_CONFIG = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306', 10),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'sif_201_system',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  ...(process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'production' && process.env.DB_HOST !== 'localhost' ? {
-    ssl: { rejectUnauthorized: false }
-  } : {})
-};
+function getDatabaseConfig() {
+  const dbUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
+  if (dbUrl) {
+    try {
+      const parsed = new URL(dbUrl);
+      const isSsl = parsed.searchParams.get('ssl-mode') || process.env.DB_SSL === 'true' || (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1');
+      return {
+        host: parsed.hostname,
+        port: parseInt(parsed.port || '3306', 10),
+        user: decodeURIComponent(parsed.username || 'root'),
+        password: decodeURIComponent(parsed.password || ''),
+        database: parsed.pathname ? parsed.pathname.replace(/^\//, '') : 'defaultdb',
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        ...(isSsl ? { ssl: { rejectUnauthorized: false } } : {})
+      };
+    } catch (e) {
+      console.warn('[DB] Failed to parse DATABASE_URL, falling back to individual DB_* env vars:', e.message);
+    }
+  }
+
+  const host = process.env.DB_HOST || 'localhost';
+  const isSsl = process.env.DB_SSL === 'true' || (process.env.NODE_ENV === 'production' && host !== 'localhost' && host !== '127.0.0.1');
+  return {
+    host: host,
+    port: parseInt(process.env.DB_PORT || '3306', 10),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'sif_201_system',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    ...(isSsl ? { ssl: { rejectUnauthorized: false } } : {})
+  };
+}
+
+const DB_CONFIG = getDatabaseConfig();
 
 let pool = null;
 
 function getPool() {
   if (!pool) {
-    if (process.env.MYSQL_URL || process.env.DATABASE_URL) {
-      pool = mysql.createPool(process.env.MYSQL_URL || process.env.DATABASE_URL);
-    } else {
-      pool = mysql.createPool(DB_CONFIG);
-    }
+    pool = mysql.createPool(DB_CONFIG);
   }
   return pool;
 }
@@ -34,6 +55,7 @@ function getPool() {
  * Initialize MySQL Database & Tables
  */
 async function initDatabase() {
+  console.log(`[DB] Connecting to MySQL at ${DB_CONFIG.host}:${DB_CONFIG.port}, database: ${DB_CONFIG.database}, ssl: ${!!DB_CONFIG.ssl}`);
   // 1. Try to ensure database exists if user has global permissions (skip gracefully if scoped user on cloud)
   try {
     const tempConnection = await mysql.createConnection({
@@ -48,7 +70,7 @@ async function initDatabase() {
     );
     await tempConnection.end();
   } catch (err) {
-    // On cloud databases (Aiven, TiDB, Railway), database is pre-created by provider
+    // On cloud databases (Aiven, TiDB, Railway), database is pre-created by provider or user lacks CREATE DATABASE privilege
   }
 
   const p = getPool();

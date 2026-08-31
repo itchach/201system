@@ -177,18 +177,14 @@ app.post('/api/auth/google', async (req, res) => {
 
   let googleUser = null;
 
+  // --- 1. Verify Google ID Token ---
   try {
     if (!GOOGLE_CLIENT_ID) {
-      // GOOGLE_CLIENT_ID not yet configured — cannot verify token audience.
-      // The system is not usable until a valid Client ID is set in .env.
       return res.status(503).json({
         error: 'Google Sign-In is not yet configured on this server. Please contact the system administrator to set up GOOGLE_CLIENT_ID.'
       });
     }
 
-    // Cryptographically verify the Google ID token using the OAuth2 client.
-    // This call contacts Google's public key endpoint to verify the JWT signature,
-    // expiry, and audience. ONLY the verified payload is trusted.
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: GOOGLE_CLIENT_ID
@@ -203,42 +199,45 @@ app.post('/api/auth/google', async (req, res) => {
       return res.status(401).json({ error: 'Google account email is not verified.' });
     }
 
-    // Extract identity exclusively from the verified token payload — never from the request body
     googleUser = {
-      googleId: payload.sub,                                       // immutable Google account ID
-      email: payload.email.trim().toLowerCase(),                   // verified by Google
+      googleId: payload.sub,
+      email: payload.email.trim().toLowerCase(),
       name: payload.name || payload.email,
-      hostedDomain: (payload.hd || '').toLowerCase()              // Google Workspace hosted domain
+      hostedDomain: (payload.hd || '').toLowerCase()
     };
+  } catch (err) {
+    console.error('[AUTH] Google ID token cryptographic verification error:', err.message);
+    return res.status(401).json({ error: 'Google authentication failed. Please try again.' });
+  }
 
-    // 2. Strict Domain Verification: Only @olivarezcollege.edu.ph permitted
-    const emailDomain = googleUser.email.split('@')[1] || '';
-    if (emailDomain !== ALLOWED_DOMAIN && googleUser.hostedDomain !== ALLOWED_DOMAIN) {
-      return res.status(403).json({
-        error: 'Please sign in using your Olivarez College Google account.'
-      });
-    }
+  // --- 2. Strict Domain Verification ---
+  const emailDomain = googleUser.email.split('@')[1] || '';
+  if (emailDomain !== ALLOWED_DOMAIN && googleUser.hostedDomain !== ALLOWED_DOMAIN) {
+    return res.status(403).json({
+      error: 'Please sign in using your Olivarez College Google account.'
+    });
+  }
 
-    // 3. Authorized User Checking: School account must be pre-registered and active.
-    // The authorized-user record only GRANTS permission to the authenticated Google identity.
-    // It does not create or impersonate that identity.
+  // --- 3. Database User Authorization & Session Creation ---
+  try {
     let user = await getOne('SELECT * FROM users WHERE LOWER(email) = ?', [googleUser.email]);
 
     if (!user) {
+      console.warn(`[AUTH] Unauthorized user attempted sign-in: ${googleUser.email}`);
       return res.status(403).json({
         error: 'Your account is not authorized to access this system. Please contact the administrator.'
       });
     }
 
     if (user.status !== 'active') {
+      console.warn(`[AUTH] Inactive user attempted sign-in: ${googleUser.email}`);
       return res.status(403).json({
         error: 'Your account is not authorized to access this system. Please contact the administrator.'
       });
     }
 
-    // 4. Bind the verified Google ID (sub) to this user record on first sign-in
+    // Bind Google ID on first login
     if (googleUser.googleId && user.google_id !== googleUser.googleId) {
-      // If a different google_id is already bound, reject (account takeover prevention)
       if (user.google_id && user.google_id !== googleUser.googleId) {
         console.warn(`[SECURITY] Google ID mismatch for user ${user.email}: stored=${user.google_id}, presented=${googleUser.googleId}`);
         return res.status(403).json({
@@ -249,19 +248,18 @@ app.post('/api/auth/google', async (req, res) => {
       user.google_id = googleUser.googleId;
     }
 
-    // 5. Create Secure Server Session
+    // Create Secure Session
     const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2);
     req.session.sessionId = sessionId;
     req.session.user = {
       id: user.id,
-      googleId: user.google_id,       // immutable sub from Google
-      email: user.email,              // from our users table (matched against verified token email)
+      googleId: user.google_id,
+      email: user.email,
       name: user.name,
       role: user.role
     };
     req.session.lastActivity = Date.now();
 
-    // Diagnostic log — helps trace the POST→GET session round-trip on Render
     console.log('[AUTH] Session created:', !!req.session, req.session?.user?.email, '| secure:', isProduction, '| proto:', req.protocol);
 
     res.json({
@@ -269,9 +267,8 @@ app.post('/api/auth/google', async (req, res) => {
       user: req.session.user
     });
   } catch (err) {
-    console.error('Google token verification error:', err.message);
-    // Return generic error — never expose internal verification details to client
-    res.status(401).json({ error: 'Google authentication failed. Please try again.' });
+    console.error('[AUTH] Database error during user authorization lookup:', err.message, err.code || '');
+    res.status(500).json({ error: 'Database service unavailable. Please contact the administrator.' });
   }
 });
 
