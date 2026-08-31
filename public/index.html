@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Olivarez College CCS 201-FILE Management System — Secure school account login.">
-  <title>Sign In — 201-FILE Management System</title>
+  <title>Sign In — 201-FILE Management System | Olivarez College</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,207 +13,277 @@
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: radial-gradient(circle at 10% 20%, rgb(236, 253, 245) 0%, rgb(248, 250, 252) 90%);
+      background: radial-gradient(1200px circle at 50% 10%, rgba(16, 185, 129, 0.12) 0%, rgba(240, 253, 244, 0.6) 40%, #f8fafc 100%);
       padding: 1.5rem;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
+    }
+
+    /* Ambient glow elements */
+    .ambient-glow {
+      position: fixed;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(5, 150, 105, 0.15) 0%, rgba(5, 150, 105, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+      top: 5%;
+      filter: blur(40px);
     }
 
     .login-container {
-      max-width: 460px;
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
       width: 100%;
       background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 2.5rem 2.25rem;
-      box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.12);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 20px;
+      padding: 2.75rem 2.25rem 2.25rem;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.06);
       text-align: center;
-      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .school-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--primary-light);
-      color: var(--primary);
-      padding: 0.4rem 1rem;
-      border-radius: var(--radius-full);
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.6px;
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--primary-border);
-    }
-
-    .logo-hero {
-      width: 68px;
-      height: 68px;
-      background: linear-gradient(135deg, #059669, #10b981);
-      color: #fff;
-      border-radius: var(--radius-md);
+    /* Official Logo Container */
+    .logo-container {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .logo-img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(5, 150, 105, 0.25));
+      transition: transform 0.3s ease;
+    }
+
+    .logo-img:hover {
+      transform: scale(1.04);
+    }
+
+    .institution-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
       font-weight: 800;
-      margin-bottom: 1rem;
-      box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .login-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #064e3b;
+      line-height: 1.25;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .login-subtitle {
+      color: #64748b;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Domain Restriction Alert */
+    .domain-notice {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      font-size: 0.82rem;
+      text-align: left;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      line-height: 1.45;
+    }
+
+    .domain-notice-icon {
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 0.1rem;
+    }
+
+    .domain-notice strong {
+      color: #065f46;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+
+    .domain-notice code {
+      background: rgba(22, 101, 52, 0.1);
+      color: #065f46;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      font-family: ui-monospace, monospace;
+    }
+
+    /* Error Display Alert */
+    .error-alert {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      padding: 0.85rem 1.15rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+      display: none;
+      text-align: left;
+      font-weight: 500;
     }
 
     /* Google Sign-In Button Container */
     #google-signin-btn-wrapper {
       display: flex;
       justify-content: center;
-      margin: 1.5rem 0 1rem 0;
-    }
-
-    .google-btn-custom {
-      width: 100%;
-      background: #ffffff;
-      border: 1px solid #dadce0;
-      color: #3c4043;
-      padding: 0.8rem 1.25rem;
-      border-radius: var(--radius-sm);
-      display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.85rem;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      transition: var(--transition);
-      font-family: 'Inter', sans-serif;
+      min-height: 48px;
+      margin: 1.25rem 0;
     }
 
-    .google-btn-custom:hover {
-      background: #f8fafc;
-      border-color: #c0c4c9;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-      transform: translateY(-1px);
-    }
-
-    .google-btn-custom:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .google-icon {
-      width: 22px;
-      height: 22px;
-      flex-shrink: 0;
-    }
-
-    .error-alert {
-      background: var(--danger-light, #fee2e2);
-      color: #991b1b;
-      border: 1px solid var(--danger-border, #fca5a5);
-      padding: 0.85rem 1.15rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.875rem;
-      margin-bottom: 1.25rem;
-      display: none;
-      text-align: left;
-    }
-
-    .domain-notice {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      border-radius: var(--radius-sm);
-      padding: 0.7rem 1rem;
-      font-size: 0.8rem;
-      text-align: left;
-      margin-bottom: 1.25rem;
-      display: flex;
+    .gis-loading-spinner {
+      display: inline-flex;
+      align-items: center;
       gap: 0.5rem;
-      align-items: flex-start;
+      color: #64748b;
+      font-size: 0.875rem;
+      font-weight: 500;
     }
 
-    .domain-notice strong {
-      display: block;
-      margin-bottom: 0.2rem;
+    .spinner-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 1.4s infinite ease-in-out both;
+    }
+
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .footer-security-note {
+      font-size: 0.775rem;
+      color: #94a3b8;
+      margin-top: 1.75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #f1f5f9;
+      line-height: 1.5;
+    }
+
+    .footer-security-note span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
   </style>
 </head>
 
 <body>
+  <div class="ambient-glow"></div>
 
   <div class="login-container">
-    <div class="school-badge">OLIVAREZ COLLEGE • CCS 201-FILE PORTAL</div>
-    <div class="logo-hero" title="Olivarez College 201-FILE">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10 9 9 9 8 9" />
-      </svg>
+    <!-- Official OCCS Logo -->
+    <div class="logo-container">
+      <img src="/images/occs-logo.png" alt="Olivarez College Computer Society Logo" class="logo-img">
     </div>
-    <h2 style="font-size: 1.55rem; margin-bottom: 0.25rem;">201-FILE Management System</h2>
-    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
-      Sign in with your authorized Olivarez College account
+
+    <!-- Department & Portal Badge -->
+    <div>
+      <span class="institution-tag">College of Computer Studies</span>
+    </div>
+
+    <h1 class="login-title">201-FILE Portal</h1>
+    <p class="login-subtitle">
+      Olivarez College Student Information & Official 201-FILE Management System
     </p>
 
-    <!-- Domain Notice -->
+    <!-- School Domain Notice -->
     <div class="domain-notice">
-      <span style="font-size: 1.1rem;">🔒</span>
+      <span class="domain-notice-icon">🔒</span>
       <div>
         <strong>School Accounts Only</strong>
-        Only <code>@olivarezcollege.edu.ph</code> Google Workspace accounts are authorized. Personal Gmail accounts are not permitted.
+        Sign in with your official <code>@olivarezcollege.edu.ph</code> Google Workspace account. Personal Gmail is not authorized.
       </div>
     </div>
 
-    <!-- Error Display Alert -->
+    <!-- Error Alert Box -->
     <div id="errorAlert" class="error-alert" role="alert"></div>
 
-    <!-- Google Identity Services Sign-In Button (renders here when Client ID is configured) -->
-    <div id="google-signin-btn-wrapper" style="margin: 1.5rem 0 1rem 0; min-height: 44px; display: flex; justify-content: center; align-items: center;">
-      <div id="gis-placeholder" style="color: var(--text-muted); font-size: 0.875rem;">Loading Google Sign-In…</div>
+    <!-- Google Identity Services Sign-In Button -->
+    <div id="google-signin-btn-wrapper">
+      <div id="gis-placeholder" class="gis-loading-spinner">
+        <span class="spinner-dot"></span>
+        <span>Loading secure Google Sign-In…</span>
+      </div>
     </div>
 
-    <!-- Setup Guide — shown ONLY when GOOGLE_CLIENT_ID is not yet configured on the server -->
-    <div id="setupGuide" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--radius-md); padding: 1.25rem; text-align: left; margin-top: 1rem;">
-      <p style="font-weight: 700; color: #92400e; margin-bottom: 0.75rem; font-size: 0.9rem;">⚙️ Administrator Setup Required</p>
-      <p style="font-size: 0.8rem; color: #78350f; margin-bottom: 0.75rem;">
-        The server's <code>GOOGLE_CLIENT_ID</code> is not yet configured. No sign-in is possible until a Google OAuth 2.0 Web Client ID is set in the server's <code>.env</code> file.
+    <!-- Setup Guide (only displayed if GOOGLE_CLIENT_ID is unconfigured) -->
+    <div id="setupGuide" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 1.25rem; text-align: left; margin-top: 1rem;">
+      <p style="font-weight: 700; color: #92400e; margin-bottom: 0.5rem; font-size: 0.88rem;">⚙️ Administrator Setup Required</p>
+      <p style="font-size: 0.8rem; color: #78350f; margin-bottom: 0.5rem;">
+        The server's <code>GOOGLE_CLIENT_ID</code> is not configured.
       </p>
-      <ol style="font-size: 0.8rem; color: #78350f; padding-left: 1.25rem; line-height: 1.8;">
-        <li>Open <strong>Google Cloud Console</strong> → APIs & Services → Credentials</li>
-        <li>Create an <strong>OAuth 2.0 Client ID</strong> (Web application)</li>
-        <li>Add <code>http://localhost:3000</code> to Authorized JavaScript origins</li>
-        <li>Copy the Client ID into <code>GOOGLE_CLIENT_ID=</code> in your <code>.env</code> file</li>
-        <li>Restart the server (<code>node server.js</code>)</li>
+      <ol style="font-size: 0.8rem; color: #78350f; padding-left: 1.25rem; line-height: 1.6;">
+        <li>Set <code>GOOGLE_CLIENT_ID</code> in your Render environment variables.</li>
+        <li>Add <code>https://two01system.onrender.com</code> to Google Cloud Console Authorized JavaScript origins.</li>
       </ol>
     </div>
 
-    <p style="font-size: 0.775rem; color: var(--text-subtle); margin-top: 1.5rem;">
-      🔒 Protected System &bull; Authorized School Google Accounts Only &bull; Session expires after 30 min inactivity
-    </p>
+    <div class="footer-security-note">
+      <span>🔒 Protected System</span> &bull; <span>Session timeout: 30 mins</span> &bull; <span>OCCS &copy; 2026</span>
+    </div>
   </div>
 
   <script src="/js/app.js"></script>
   <script>
-    // Redirect to dashboard if already signed in
+    // Redirect to dashboard if already authenticated
     App.checkAuth().then(data => {
       if (data && data.user) {
         window.location.href = data.user.role === 'admin' ? '/admin.html' : '/student.html';
       }
     });
 
-    // Fetch server-side auth config (contains GOOGLE_CLIENT_ID)
+    // Fetch server-side auth config
     fetch('/api/auth/config')
       .then(r => r.json())
       .then(config => {
         if (!config.googleClientId) {
-          // No Client ID configured — cannot render GIS button, show setup guide instead
           document.getElementById('gis-placeholder').style.display = 'none';
           document.getElementById('setupGuide').style.display = 'block';
           return;
@@ -221,35 +291,32 @@
         initGIS(config.googleClientId);
       })
       .catch(() => {
-        document.getElementById('gis-placeholder').textContent = 'Could not reach the server. Please ensure the server is running.';
+        document.getElementById('gis-placeholder').textContent = 'Could not reach server. Please ensure server is running.';
       });
 
     function initGIS(clientId) {
       if (window.google && window.google.accounts) {
         renderGISButton(clientId);
       } else {
-        // GIS script is loaded asynchronously — wait for it
         const check = setInterval(() => {
           if (window.google && window.google.accounts) {
             clearInterval(check);
             renderGISButton(clientId);
           }
         }, 100);
-        // Timeout after 5 seconds
         setTimeout(() => {
           clearInterval(check);
           if (!window.google || !window.google.accounts) {
             document.getElementById('gis-placeholder').textContent =
-              'Could not load Google Sign-In. Check your internet connection and try again.';
+              'Could not load Google Sign-In. Check your internet connection and reload.';
           }
-        }, 5000);
+        }, 6000);
       }
     }
 
     function renderGISButton(clientId) {
       document.getElementById('gis-placeholder').style.display = 'none';
 
-      // Initialize GIS — callback receives only a verified credential JWT from Google
       google.accounts.id.initialize({
         client_id: clientId,
         callback: handleVerifiedGoogleCredential,
@@ -258,7 +325,6 @@
         ux_mode: 'popup'
       });
 
-      // Render the official Google-branded sign-in button
       google.accounts.id.renderButton(
         document.getElementById('google-signin-btn-wrapper'),
         {
@@ -271,14 +337,9 @@
         }
       );
 
-      // Also show the One Tap prompt if available
       google.accounts.id.prompt();
     }
 
-    // This callback receives a verified Google ID token credential.
-    // The credential is sent to the server where it is cryptographically verified.
-    // The user's identity (email, sub) is NEVER supplied by this client — it comes
-    // exclusively from the verified Google token payload on the server.
     async function handleVerifiedGoogleCredential(googleResponse) {
       const errorAlert = document.getElementById('errorAlert');
       errorAlert.style.display = 'none';
@@ -287,7 +348,7 @@
         const res = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',   // ensure Set-Cookie is stored by the browser
+          credentials: 'include',
           body: JSON.stringify({ credential: googleResponse.credential })
         });
 
