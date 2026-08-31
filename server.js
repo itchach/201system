@@ -791,6 +791,63 @@ app.post('/api/students/:id/regenerate-pdf', requireAuth, requireAdmin, async (r
   }
 });
 
+// Admin: Regenerate ALL 201-FILE PDFs in a Section at once
+app.post('/api/sections/:id/regenerate-all', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const section = await getOne('SELECT * FROM sections WHERE id = ?', [id]);
+    if (!section) {
+      return res.status(404).json({ error: 'Section not found.' });
+    }
+
+    const students = await query(`
+      SELECT s.*, si.form_data
+      FROM students s
+      JOIN student_information si ON s.id = si.student_id
+      WHERE s.section_id = ?
+    `, [id]);
+
+    if (!students || students.length === 0) {
+      return res.status(400).json({ error: `No submitted student records found in Section ${section.name} to generate.` });
+    }
+
+    let successCount = 0;
+    for (const student of students) {
+      try {
+        const formData = JSON.parse(student.form_data);
+        const pdfResult = await generateStudentSIF(student, formData, section.name);
+
+        const existingFile = await getOne('SELECT id FROM generated_files WHERE student_id = ?', [student.id]);
+        if (existingFile) {
+          await execute(`
+            UPDATE generated_files
+            SET template_id = ?, file_path = ?, file_name = ?, file_size = ?, generated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `, [pdfResult.templateId, pdfResult.filePath, pdfResult.fileName, pdfResult.fileSize, existingFile.id]);
+        } else {
+          await execute(`
+            INSERT INTO generated_files (student_id, template_id, file_path, file_name, file_size, generated_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `, [student.id, pdfResult.templateId, pdfResult.filePath, pdfResult.fileName, pdfResult.fileSize, req.session.user.email]);
+        }
+        successCount++;
+      } catch (err) {
+        console.error(`[SECTION REGEN] Error regenerating for student ${student.id}:`, err.message);
+      }
+    }
+
+    res.json({
+      message: `Successfully regenerated ${successCount} of ${students.length} 201-FILEs for Section ${section.name}.`,
+      regeneratedCount: successCount,
+      totalCount: students.length
+    });
+  } catch (err) {
+    console.error('Error regenerating section PDFs:', err);
+    res.status(500).json({ error: 'Failed to regenerate section PDFs.' });
+  }
+});
+
 // ==========================================
 // Helper: Ensure SIF file exists on disk, auto-regenerating from DB if wiped (e.g. Render restart)
 async function ensureSifFileOnDisk(fileRecord) {
