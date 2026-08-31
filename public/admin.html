@@ -1003,14 +1003,17 @@
               <td><strong>${s.student_id || '—'}</strong></td>
               <td>${s.last_name}, ${s.first_name}</td>
               <td>
-                ${s.generated_file_id ? `<span class="badge badge-success">📄 ${s.file_name}</span>` : '<span class="badge badge-secondary">Pending Submission</span>'}
+                ${s.generated_file_id ? `<span class="badge badge-success">📄 ${s.file_name}</span>` : '<span class="badge badge-warning">Pending Generation</span>'}
               </td>
               <td style="text-align: right; white-space: nowrap;">
                 ${s.generated_file_id ? `
-                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')">👁   View</button>
-                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary">⬇ Download</a>
-                  <button class="btn btn-sm btn-danger" onclick="removeSectionFile(${s.generated_file_id}, '${s.file_name}', ${sectionId}, '${sectionName}')">🗑 Remove</button>
-                ` : '—'}
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview PDF">👁 View</button>
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download PDF">⬇ Download</a>
+                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Re-Generate SIF PDF on server">⚡ Re-Gen</button>
+                  <button class="btn btn-sm btn-danger" onclick="removeSectionFile(${s.generated_file_id}, '${s.file_name}', ${sectionId}, '${sectionName}')" title="Remove File">🗑 Remove</button>
+                ` : `
+                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Generate Official 201-FILE PDF from database">💾 Generate PDF</button>
+                `}
               </td>
             </tr>
           `).join('');
@@ -1134,13 +1137,15 @@
               <td>${s.sif_created_at ? new Date(s.sif_created_at).toLocaleDateString() : '—'}</td>
               <td style="text-align: right; white-space: nowrap;">
                 ${s.generated_file_id ? `
-                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE">⬇</a>
-                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE">👁</button>
-                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File from Section">🗑</button>
-                ` : ''}
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE PDF">⬇ Download</a>
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE PDF">👁 View</button>
+                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF from database">⚡ Re-Gen</button>
+                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File from Section">🗑 File</button>
+                ` : `
+                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id})" title="Generate Official 201-FILE PDF from submitted information">💾 Generate PDF</button>
+                `}
                 <button class="btn btn-sm btn-secondary" onclick="openMoveStudentModal(${s.id}, '${s.first_name} ${s.last_name}', ${s.section_id})" title="Move Section">⇄ Move</button>
-                <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Regenerate SIF PDF">↺</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">✕</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">✕ Delete</button>
               </td>
             </tr>
           `;
@@ -1185,24 +1190,26 @@
       }
     }
 
-    async function regenerateStudentPDF(studentId) {
-      if (!confirm('Regenerate SIF PDF for this student under their current section?')) return;
-
+    async function regenerateStudentPDF(studentId, sectionId, sectionName) {
       try {
+        App.showToast('Generating official 201-FILE PDF... ⏳');
         const res = await fetch(`/api/students/${studentId}/regenerate-pdf`, { method: 'POST' });
         const data = await res.json();
 
         if (!res.ok) {
-          App.showToast(data.error || 'Failed to regenerate PDF', 'error');
+          App.showToast(data.error || 'Failed to generate PDF', 'error');
           return;
         }
 
-        App.showToast(data.message || 'SIF PDF regenerated! ✓');
+        App.showToast(data.message || '201-FILE PDF generated successfully! ✓');
+        if (sectionId && sectionName) {
+          await viewSectionFiles(sectionId, sectionName);
+        }
         await loadStudents();
         await loadSections();
         await loadDashboard();
       } catch (err) {
-        App.showToast('Network error regenerating PDF', 'error');
+        App.showToast('Network error generating PDF', 'error');
       }
     }
 

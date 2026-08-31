@@ -792,10 +792,56 @@ app.post('/api/students/:id/regenerate-pdf', requireAuth, requireAdmin, async (r
 });
 
 // ==========================================
-// 6. SECURE FILE ACCESS & DOWNLOADS (PROTECTED)
-// ==========================================
+// Helper: Ensure SIF file exists on disk, auto-regenerating from DB if wiped (e.g. Render restart)
+async function ensureSifFileOnDisk(fileRecord) {
+  let fullPath = path.isAbsolute(fileRecord.file_path)
+    ? fileRecord.file_path
+    : path.join(__dirname, fileRecord.file_path);
 
-// Download SIF PDF (Strict Ownership Check)
+  // Normalize path separators for current platform (Windows \ vs Linux /)
+  fullPath = path.normalize(fullPath.replace(/\\/g, path.sep).replace(/\//g, path.sep));
+
+  if (fs.existsSync(fullPath)) {
+    return fullPath;
+  }
+
+  // If file doesn't exist on disk (e.g. after Render restart), auto-regenerate on the fly from database!
+  console.log(`[FILE] File not found on disk (${fullPath}). Auto-regenerating from database for student_id: ${fileRecord.student_id}...`);
+  try {
+    const student = await getOne(`
+      SELECT s.*, sec.name as section_name
+      FROM students s
+      LEFT JOIN sections sec ON s.section_id = sec.id
+      WHERE s.id = ?
+    `, [fileRecord.student_id]);
+
+    if (!student) return null;
+
+    const infoRecord = await getOne('SELECT form_data FROM student_information WHERE student_id = ?', [student.id]);
+    if (!infoRecord || !infoRecord.form_data) return null;
+
+    const formData = JSON.parse(infoRecord.form_data);
+    const sectionName = student.section_name || 'Unassigned';
+    const pdfResult = await generateStudentSIF(student, formData, sectionName);
+
+    await execute(`
+      UPDATE generated_files
+      SET template_id = ?, file_path = ?, file_name = ?, file_size = ?, generated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [pdfResult.templateId, pdfResult.filePath, pdfResult.fileName, pdfResult.fileSize, fileRecord.id]);
+
+    const newFullPath = path.isAbsolute(pdfResult.filePath)
+      ? pdfResult.filePath
+      : path.join(__dirname, pdfResult.filePath);
+
+    return path.normalize(newFullPath);
+  } catch (err) {
+    console.error('[FILE] Auto-regeneration failed:', err.message);
+    return null;
+  }
+}
+
+// Download SIF PDF (Strict Ownership Check + Auto-Regeneration on Disk Miss)
 app.get('/api/files/sif/:id/download', requireAuth, async (req, res) => {
   const fileId = req.params.id;
   try {
@@ -815,12 +861,10 @@ app.get('/api/files/sif/:id/download', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'You do not have permission to access this student record.' });
     }
 
-    const fullPath = path.isAbsolute(fileRecord.file_path)
-      ? fileRecord.file_path
-      : path.join(__dirname, fileRecord.file_path);
+    const fullPath = await ensureSifFileOnDisk(fileRecord);
 
-    if (!fs.existsSync(fullPath)) {
-      return res.status(404).json({ error: 'File does not exist on server.' });
+    if (!fullPath || !fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'File could not be found or regenerated on the server.' });
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -829,11 +873,12 @@ app.get('/api/files/sif/:id/download', requireAuth, async (req, res) => {
     const readStream = fs.createReadStream(fullPath);
     readStream.pipe(res);
   } catch (err) {
+    console.error('Download error:', err);
     res.status(500).json({ error: 'Failed to download file.' });
   }
 });
 
-// View SIF PDF inline in browser (Strict Ownership Check)
+// View SIF PDF inline in browser (Strict Ownership Check + Auto-Regeneration on Disk Miss)
 app.get('/api/files/sif/:id/view', requireAuth, async (req, res) => {
   const fileId = req.params.id;
   try {
@@ -848,17 +893,15 @@ app.get('/api/files/sif/:id/view', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'File not found.' });
     }
 
-    // Critical Security Check: Student can ONLY view their own file
+    // Critical Security Check: Student can ONLY view their own file; Admin can access all
     if (req.session.user.role !== 'admin' && req.session.user.id !== fileRecord.user_id) {
       return res.status(403).json({ error: 'You do not have permission to access this student record.' });
     }
 
-    const fullPath = path.isAbsolute(fileRecord.file_path)
-      ? fileRecord.file_path
-      : path.join(__dirname, fileRecord.file_path);
+    const fullPath = await ensureSifFileOnDisk(fileRecord);
 
-    if (!fs.existsSync(fullPath)) {
-      return res.status(404).json({ error: 'File does not exist on server.' });
+    if (!fullPath || !fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'File could not be found or regenerated on the server.' });
     }
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -867,6 +910,7 @@ app.get('/api/files/sif/:id/view', requireAuth, async (req, res) => {
     const readStream = fs.createReadStream(fullPath);
     readStream.pipe(res);
   } catch (err) {
+    console.error('View file error:', err);
     res.status(500).json({ error: 'Failed to view file.' });
   }
 });
