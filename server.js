@@ -12,7 +12,7 @@ const { ensureDefaultTemplate, generateStudentSIF, SIFS_DIR, TEMPLATES_DIR } = r
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ALLOWED_DOMAIN = (process.env.ALLOWED_DOMAIN || 'olivarezcollege.edu.ph').toLowerCase();
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = (process.env.GOOGLE_CLIENT_ID || '').replace(/^["']|["']$/g, '').trim();
 const SESSION_TIMEOUT_MINUTES = parseInt(process.env.SESSION_TIMEOUT_MINUTES || '30', 10);
 const INACTIVITY_TIMEOUT_MS = SESSION_TIMEOUT_MINUTES * 60 * 1000;
 
