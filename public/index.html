@@ -9,7 +9,9 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
@@ -193,8 +195,18 @@
     }
 
     @keyframes pulse {
-      0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-      40% { transform: scale(1); opacity: 1; }
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+        opacity: 0.3;
+      }
+
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .footer-security-note {
@@ -235,10 +247,11 @@
 
     <!-- School Domain Notice -->
     <div class="domain-notice">
-      <span class="domain-notice-icon">🔒</span>
+      <span class="domain-notice-icon"></span>
       <div>
         <strong>School Accounts Only</strong>
-        Sign in with your official <code>@olivarezcollege.edu.ph</code> Google Workspace account. Personal Gmail is not authorized.
+        Sign in with your official <code>@olivarezcollege.edu.ph</code> Google Workspace account. Personal Gmail is not
+        authorized.
       </div>
     </div>
 
@@ -254,123 +267,131 @@
     </div>
 
     <!-- Setup Guide (only displayed if GOOGLE_CLIENT_ID is unconfigured) -->
-    <div id="setupGuide" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 1.25rem; text-align: left; margin-top: 1rem;">
-      <p style="font-weight: 700; color: #92400e; margin-bottom: 0.5rem; font-size: 0.88rem;">⚙️ Administrator Setup Required</p>
+    <div id="setupGuide"
+      style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 1.25rem; text-align: left; margin-top: 1rem;">
+      <p style="font-weight: 700; color: #92400e; margin-bottom: 0.5rem; font-size: 0.88rem;">⚙️ Administrator Setup
+        Required</p>
       <p style="font-size: 0.8rem; color: #78350f; margin-bottom: 0.5rem;">
         The server's <code>GOOGLE_CLIENT_ID</code> is not configured.
       </p>
       <ol style="font-size: 0.8rem; color: #78350f; padding-left: 1.25rem; line-height: 1.6;">
         <li>Set <code>GOOGLE_CLIENT_ID</code> in your Render environment variables.</li>
-        <li>Add <code>https://two01system.onrender.com</code> to Google Cloud Console Authorized JavaScript origins.</li>
+        <li>Add <code>https://two01system.onrender.com</code> to Google Cloud Console Authorized JavaScript origins.
+        </li>
       </ol>
     </div>
 
+
     <div class="footer-security-note">
-      <span>🔒 Protected System</span> &bull; <span>Session timeout: 30 mins</span> &bull; <span>OCCS &copy; 2026</span>
+      <span>Access is limited to authorized personnel and appropriate security measures are applied.</span>
+      <br>
+      <span>Designed & developed by Jhaydee.</span>
+      &bull;
+      <span>OCCS &copy; 2026</span>
     </div>
-  </div>
 
-  <script src="/js/app.js"></script>
-  <script>
-    // Redirect to dashboard if already authenticated
-    App.checkAuth().then(data => {
-      if (data && data.user) {
-        window.location.href = data.user.role === 'admin' ? '/admin.html' : '/student.html';
-      }
-    });
 
-    // Fetch server-side auth config
-    fetch('/api/auth/config')
-      .then(r => r.json())
-      .then(config => {
-        if (!config.googleClientId) {
-          document.getElementById('gis-placeholder').style.display = 'none';
-          document.getElementById('setupGuide').style.display = 'block';
-          return;
+    <script src="/js/app.js"></script>
+    <script>
+      // Redirect to dashboard if already authenticated
+      App.checkAuth().then(data => {
+        if (data && data.user) {
+          window.location.href = data.user.role === 'admin' ? '/admin.html' : '/student.html';
         }
-        initGIS(config.googleClientId);
-      })
-      .catch(() => {
-        document.getElementById('gis-placeholder').textContent = 'Could not reach server. Please ensure server is running.';
       });
 
-    function initGIS(clientId) {
-      if (window.google && window.google.accounts) {
-        renderGISButton(clientId);
-      } else {
-        const check = setInterval(() => {
-          if (window.google && window.google.accounts) {
-            clearInterval(check);
-            renderGISButton(clientId);
+      // Fetch server-side auth config
+      fetch('/api/auth/config')
+        .then(r => r.json())
+        .then(config => {
+          if (!config.googleClientId) {
+            document.getElementById('gis-placeholder').style.display = 'none';
+            document.getElementById('setupGuide').style.display = 'block';
+            return;
           }
-        }, 100);
-        setTimeout(() => {
-          clearInterval(check);
-          if (!window.google || !window.google.accounts) {
-            document.getElementById('gis-placeholder').textContent =
-              'Could not load Google Sign-In. Check your internet connection and reload.';
-          }
-        }, 6000);
-      }
-    }
-
-    function renderGISButton(clientId) {
-      document.getElementById('gis-placeholder').style.display = 'none';
-
-      google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleVerifiedGoogleCredential,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        ux_mode: 'popup'
-      });
-
-      google.accounts.id.renderButton(
-        document.getElementById('google-signin-btn-wrapper'),
-        {
-          theme: 'outline',
-          size: 'large',
-          width: 380,
-          text: 'signin_with',
-          shape: 'rectangular',
-          logo_alignment: 'left'
-        }
-      );
-
-      google.accounts.id.prompt();
-    }
-
-    async function handleVerifiedGoogleCredential(googleResponse) {
-      const errorAlert = document.getElementById('errorAlert');
-      errorAlert.style.display = 'none';
-
-      try {
-        const res = await fetch('/api/auth/google', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ credential: googleResponse.credential })
+          initGIS(config.googleClientId);
+        })
+        .catch(() => {
+          document.getElementById('gis-placeholder').textContent = 'Could not reach server. Please ensure server is running.';
         });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          errorAlert.textContent = data.error || 'Authentication failed. Please try again.';
-          errorAlert.style.display = 'block';
-          return;
+      function initGIS(clientId) {
+        if (window.google && window.google.accounts) {
+          renderGISButton(clientId);
+        } else {
+          const check = setInterval(() => {
+            if (window.google && window.google.accounts) {
+              clearInterval(check);
+              renderGISButton(clientId);
+            }
+          }, 100);
+          setTimeout(() => {
+            clearInterval(check);
+            if (!window.google || !window.google.accounts) {
+              document.getElementById('gis-placeholder').textContent =
+                'Could not load Google Sign-In. Check your internet connection and reload.';
+            }
+          }, 6000);
         }
-
-        App.showToast(`Welcome, ${data.user.name}!`);
-        setTimeout(() => {
-          window.location.href = data.user.role === 'admin' ? '/admin.html' : '/student.html';
-        }, 300);
-
-      } catch (err) {
-        errorAlert.textContent = 'Server connection error. Please try again.';
-        errorAlert.style.display = 'block';
       }
-    }
-  </script>
+
+      function renderGISButton(clientId) {
+        document.getElementById('gis-placeholder').style.display = 'none';
+
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleVerifiedGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          ux_mode: 'popup'
+        });
+
+        google.accounts.id.renderButton(
+          document.getElementById('google-signin-btn-wrapper'),
+          {
+            theme: 'outline',
+            size: 'large',
+            width: 380,
+            text: 'signin_with',
+            shape: 'rectangular',
+            logo_alignment: 'left'
+          }
+        );
+
+        google.accounts.id.prompt();
+      }
+
+      async function handleVerifiedGoogleCredential(googleResponse) {
+        const errorAlert = document.getElementById('errorAlert');
+        errorAlert.style.display = 'none';
+
+        try {
+          const res = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ credential: googleResponse.credential })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            errorAlert.textContent = data.error || 'Authentication failed. Please try again.';
+            errorAlert.style.display = 'block';
+            return;
+          }
+
+          App.showToast(`Welcome, ${data.user.name}!`);
+          setTimeout(() => {
+            window.location.href = data.user.role === 'admin' ? '/admin.html' : '/student.html';
+          }, 300);
+
+        } catch (err) {
+          errorAlert.textContent = 'Server connection error. Please try again.';
+          errorAlert.style.display = 'block';
+        }
+      }
+    </script>
 </body>
 
 </html>
