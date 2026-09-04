@@ -209,10 +209,7 @@ async function initDatabase() {
   const [uRows] = await p.query('SELECT COUNT(*) as count FROM users');
   const defaultUsers = [
     ['jhaydee.bunales@olivarezcollege.edu.ph', 'Jhaydee Bunales (Admin)', 'admin', 'active'],
-    ['admin@olivarezcollege.edu.ph', 'College Administrator', 'admin', 'active'],
-    ['student001@olivarezcollege.edu.ph', 'Juan Dela Cruz', 'student', 'active'],
-    ['student002@olivarezcollege.edu.ph', 'Maria Santos', 'student', 'active'],
-    ['pedro.reyes@olivarezcollege.edu.ph', 'Pedro Reyes', 'student', 'active']
+    ['admin@olivarezcollege.edu.ph', 'College Administrator', 'admin', 'active']
   ];
 
   for (const u of defaultUsers) {
@@ -266,7 +263,7 @@ async function migrateFromSqliteIfAvailable() {
     // Ensure Olivarez College Admin accounts have admin role
     await p.query(`
       UPDATE users SET role = 'admin', status = 'active'
-      WHERE LOWER(email) IN ('jhaydee.bunales@olivarezcollege.edu.ph', 'admin@olivarezcollege.edu.ph', 'jhaydee.bunales.daylo@gmail.com')
+      WHERE LOWER(email) IN ('jhaydee.bunales@olivarezcollege.edu.ph', 'admin@olivarezcollege.edu.ph')
     `);
 
     // 2. Sections
