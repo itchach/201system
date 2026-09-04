@@ -410,7 +410,6 @@
           <p>Authorize school Google Workspace accounts and manage role permissions.</p>
         </div>
         <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-          <button class="btn btn-secondary" onclick="openChangePasscodeModal()">🔑 Admin Passcode</button>
           <button class="btn btn-primary" onclick="openAddUserModal()">+ Add Authorized User</button>
         </div>
       </div>
@@ -626,38 +625,6 @@
     </div>
   </div>
 
-  <!-- Change Admin Security Passcode Modal -->
-  <div class="modal-backdrop" id="changePasscodeModal">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3>🔑 Change Admin Security Passcode</h3>
-        <button class="modal-close" onclick="App.closeModal('changePasscodeModal')">&times;</button>
-      </div>
-      <form onsubmit="handleChangePasscode(event)">
-        <div class="modal-body">
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-            The Admin Security Passcode is required whenever granting or delegating administrator permissions.
-          </p>
-          <div class="form-group">
-            <label class="form-label required" for="currentPasscodeInput">Current Passcode</label>
-            <input type="password" id="currentPasscodeInput" class="form-control" required placeholder="Enter current passcode">
-          </div>
-          <div class="form-group">
-            <label class="form-label required" for="newPasscodeInput">New Passcode</label>
-            <input type="password" id="newPasscodeInput" class="form-control" required minlength="6" placeholder="At least 6 characters">
-          </div>
-          <div class="form-group">
-            <label class="form-label required" for="confirmPasscodeInput">Confirm New Passcode</label>
-            <input type="password" id="confirmPasscodeInput" class="form-control" required minlength="6" placeholder="Re-enter new passcode">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="App.closeModal('changePasscodeModal')">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Passcode</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- 6. Upload PDF Template Modal -->
   <div class="modal-backdrop" id="uploadTemplateModal">
@@ -1566,45 +1533,6 @@
       }
     }
 
-    function openChangePasscodeModal() {
-      document.getElementById('currentPasscodeInput').value = '';
-      document.getElementById('newPasscodeInput').value = '';
-      document.getElementById('confirmPasscodeInput').value = '';
-      App.openModal('changePasscodeModal');
-    }
-
-    async function handleChangePasscode(e) {
-      e.preventDefault();
-      const currentPasscode = document.getElementById('currentPasscodeInput').value;
-      const newPasscode = document.getElementById('newPasscodeInput').value;
-      const confirmPasscode = document.getElementById('confirmPasscodeInput').value;
-
-      if (newPasscode !== confirmPasscode) {
-        App.showToast('New passcodes do not match', 'warning');
-        return;
-      }
-      if (newPasscode.length < 6) {
-        App.showToast('Passcode must be at least 6 characters', 'warning');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/settings/admin-passcode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ currentPasscode, newPasscode })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          App.showToast(data.error || 'Failed to update passcode', 'error');
-          return;
-        }
-        App.showToast('Admin Security Passcode updated successfully! ✓');
-        App.closeModal('changePasscodeModal');
-      } catch (err) {
-        App.showToast('Network error updating passcode', 'error');
-      }
-    }
 
     async function deleteUser(id) {
       if (!confirm('Are you sure you want to remove authorization for this school account?')) return;

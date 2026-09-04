@@ -1164,15 +1164,9 @@ app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// Helper to get active Admin Security Passcode
+// Helper to get active Admin Security Passcode (configured directly via .env)
 async function getAdminSecurityPasscode() {
-  try {
-    const row = await getOne("SELECT setting_value FROM system_settings WHERE setting_key = 'admin_security_passcode'");
-    if (row && row.setting_value) return row.setting_value;
-  } catch (e) {
-    // fallback
-  }
-  return process.env.ADMIN_SECURITY_PASSCODE || 'OlivarezAdmin2026!';
+  return process.env.ADMIN_SECURITY_PASSCODE || 'JidiBonez2026!';
 }
 
 // Add authorized school user (Must belong to @olivarezcollege.edu.ph)
@@ -1271,33 +1265,6 @@ app.patch('/api/users/:id/role', requireAuth, requireAdmin, async (req, res) => 
   }
 });
 
-// Update Admin Security Passcode (Admin Only)
-app.post('/api/settings/admin-passcode', requireAuth, requireAdmin, async (req, res) => {
-  const { currentPasscode, newPasscode } = req.body;
-  if (!currentPasscode || !newPasscode) {
-    return res.status(400).json({ error: 'Current passcode and new passcode are required.' });
-  }
-  if (newPasscode.length < 6) {
-    return res.status(400).json({ error: 'New passcode must be at least 6 characters long.' });
-  }
-
-  const validPasscode = await getAdminSecurityPasscode();
-  if (currentPasscode !== validPasscode) {
-    return res.status(403).json({ error: 'Current Admin Security Passcode is incorrect.' });
-  }
-
-  try {
-    await execute(`
-      INSERT INTO system_settings (setting_key, setting_value)
-      VALUES ('admin_security_passcode', ?)
-      ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
-    `, [newPasscode]);
-
-    res.json({ message: 'Admin Security Passcode updated successfully.' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to update Admin Security Passcode.' });
-  }
-});
 
 // Delete user authorization
 app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
