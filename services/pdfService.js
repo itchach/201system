@@ -20,8 +20,8 @@ const DEFAULT_TEMPLATE_PATH = path.join(TEMPLATES_DIR, 'Student_Personal_Informa
  * Creates the official 1-Page Olivarez College BSIT template with all sections
  * perfectly proportioned and distributed to maximize full page usage.
  */
-async function ensureDefaultTemplate() {
-  if (fs.existsSync(DEFAULT_TEMPLATE_PATH)) {
+async function ensureDefaultTemplate(forceRegenerate = false) {
+  if (!forceRegenerate && fs.existsSync(DEFAULT_TEMPLATE_PATH)) {
     return DEFAULT_TEMPLATE_PATH;
   }
 
@@ -43,17 +43,22 @@ async function ensureDefaultTemplate() {
   // ==============================
   // HEADER
   // ==============================
-  page.drawText('OLIVAREZ COLLEGE', { x: 216, y: 766, size: 13.5, font: fontBold, color: black });
-  page.drawText('Dr. A. Santos Avenue, Sucat Road, Parañaque City', { x: 185, y: 753, size: 8, font: fontRegular, color: rgb(0.2, 0.2, 0.2) });
-  page.drawText('PAASCU/PACUCOA Accredited', { x: 234, y: 742, size: 7.5, font: fontRegular, color: rgb(0.3, 0.3, 0.3) });
-  page.drawText('College of Computer Studies', { x: 210, y: 728, size: 10.5, font: fontBold, color: black });
-  page.drawText("Student's Personal Information Sheet (BSIT)", { x: 182, y: 715, size: 10, font: fontBold, color: black });
+  const drawCentered = (text, y, size, font, col = black) => {
+    const textW = font.widthOfTextAtSize(text, size);
+    page.drawText(text, { x: (612 - textW) / 2, y, size, font, color: col });
+  };
 
-  // 2" x 2" Photo Box
-  const photoW = 82;
-  const photoH = 88;
+  drawCentered('OLIVAREZ COLLEGE', 766, 13.5, fontBold, black);
+  drawCentered('Dr. A. Santos Avenue, Sucat Road, Parañaque City', 753, 8, fontRegular, rgb(0.2, 0.2, 0.2));
+  drawCentered('PAASCU/PACUCOA Accredited', 742, 7.5, fontRegular, rgb(0.3, 0.3, 0.3));
+  drawCentered('College of Computer Studies', 728, 10.5, fontBold, black);
+  drawCentered("Student's Personal Information Sheet (BSIT)", 715, 10, fontBold, black);
+
+  // 1" x 1" Photo Box (2.54 cm x 2.54 cm)
+  const photoW = 72;
+  const photoH = 72;
   const photoX = rightX - photoW;
-  const photoY = 692;
+  const photoY = 704;
   page.drawRectangle({
     x: photoX,
     y: photoY,
@@ -63,8 +68,10 @@ async function ensureDefaultTemplate() {
     borderColor: grayText,
     borderDashArray: [3, 3]
   });
-  page.drawText('2" x 2"', { x: photoX + 28, y: photoY + 48, size: 8, font: fontRegular, color: grayText });
-  page.drawText('PHOTO', { x: photoX + 24, y: photoY + 36, size: 8, font: fontRegular, color: grayText });
+  const dimW = fontRegular.widthOfTextAtSize('1" x 1"', 8);
+  page.drawText('1" x 1"', { x: photoX + (photoW - dimW) / 2, y: photoY + 40, size: 8, font: fontRegular, color: grayText });
+  const photoWrd = fontRegular.widthOfTextAtSize('PHOTO', 8);
+  page.drawText('PHOTO', { x: photoX + (photoW - photoWrd) / 2, y: photoY + 26, size: 8, font: fontRegular, color: grayText });
 
   let curY = 690;
 
@@ -452,10 +459,10 @@ async function generateStudentSIF(studentRecord, formData, sectionName) {
 
       if (embeddedImage) {
         page.drawImage(embeddedImage, {
-          x: rightX - 81,
-          y: 693,
-          width: 80,
-          height: 86
+          x: rightX - 72 + 1,
+          y: 704 + 1,
+          width: 70,
+          height: 70
         });
       }
     } catch (photoErr) {
@@ -566,9 +573,9 @@ async function generateStudentSIF(studentRecord, formData, sectionName) {
   const emergTableTop = eduTableTop - (10 * eduRowH) - 22 - 14;
   const emergValX = leftX + 165;
 
-  fillText(`${formData.emergencyName || ''} ${formData.emergencyRelationship ? '(' + formData.emergencyRelationship + ')' : ''}`.trim(), emergValX, emergTableTop - (1 * emergRowH) + 4, 8, false, 365);
-  fillText(formData.emergencyAddress || '', emergValX, emergTableTop - (2 * emergRowH) + 4, 8, false, 365);
-  fillText(formData.emergencyContact || '', emergValX, emergTableTop - (3 * emergRowH) + 4, 8, false, 365);
+  fillText(`${formData.emergencyName || ''} ${formData.emergencyRelationship ? '(' + formData.emergencyRelationship + ')' : ''}`.trim(), emergValX, emergTableTop - (1 * emergRowH) + 6, 8, false, 365);
+  fillText(formData.emergencyAddress || '', emergValX, emergTableTop - (2 * emergRowH) + 6, 8, false, 365);
+  fillText(formData.emergencyContact || '', emergValX, emergTableTop - (3 * emergRowH) + 6, 8, false, 365);
 
   // Optional Custom Mapping for Section Stamping
   const activeTemplate = await getOne('SELECT * FROM pdf_templates WHERE is_active = 1 ORDER BY id DESC LIMIT 1');

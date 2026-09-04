@@ -1,4 +1,4 @@
-﻿# Student Information File (201-FILE) Management System
+# Student Information File (201-FILE) Management System
 
 A web-based **Student Information File (201-FILE) Management System** for schools built with Node.js, Express, SQLite, and PDF-Lib.
 
@@ -18,8 +18,8 @@ The system enables students to complete their official school information sheet 
    - The selected section organizes generated 201-FILE files into directory folders: `uploads/201-FILEs/{section}/201-FILE_{student_id}_{last_name}_{first_name}.pdf`.
    - Distinguishes between form data that goes into the PDF and system metadata (Section). Section is NOT stamped onto the PDF unless explicitly mapped by the admin.
 
-3. **Olivarez College BSIT 2-Page Form & Automated PDF Generation**
-   - Implements the complete 2-page Olivarez College BSIT Personal Information Sheet (Personal Details, Parent's Information & check-boxes, Educational Background, and Emergency Contact).
+3. **Olivarez College BSIT Form & Automated PDF Generation**
+   - Implements the complete official 1-page Olivarez College BSIT Personal Information Sheet (Personal Details, Parent's Information & check-boxes, Educational Background, and Emergency Contact).
    - Instant automated generation upon form submission with `pdf-lib`.
 
 4. **Section Changes & Historical PDFs (Requirement #7)**

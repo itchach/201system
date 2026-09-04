@@ -208,7 +208,7 @@
         <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Official 201-FILE Document Status</h3>
         <p id="sifStatusDesc" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
           You haven't submitted your Student Information Form yet. Please complete the form to automatically generate
-          your official 2-page 201-FILE PDF.
+          your official 201-FILE PDF.
         </p>
         <div id="sifActionsContainer">
           <button class="btn btn-primary" onclick="showTab('formTab')">Fill Out 201-FILE Form Now →</button>
@@ -229,7 +229,7 @@
       <div class="form-header-badge">
         <span>ℹ</span>
         <span>
-          Information submitted here is automatically mapped into the school's official 2-page PDF template and
+          Information submitted here is automatically mapped into the school's official PDF template and
           organized under your chosen Section.
         </span>
       </div>
@@ -271,31 +271,31 @@
             I. Personal Information
           </div>
 
-          <!-- 2" x 2" Photo Upload Card -->
+          <!-- 1" x 1" Photo Upload Card -->
           <div class="edu-card"
             style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
             <div style="text-align: center;">
               <div id="photoPreviewContainer"
-                style="width: 110px; height: 110px; border: 2px dashed var(--border); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; overflow: hidden; position: relative;">
+                style="width: 100px; height: 100px; border: 2px dashed var(--border); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; overflow: hidden; position: relative;">
                 <span id="photoPlaceholder"
                   style="font-size: 0.75rem; color: var(--text-muted); padding: 0.5rem; text-align: center;">
-                  📸<br><strong>2" x 2"</strong><br>PHOTO
+                  📸<br><strong>1" x 1"</strong><br>(2.54 × 2.54 cm)
                 </span>
-                <img id="photoPreviewImg" src="" alt="2x2 Photo Preview"
+                <img id="photoPreviewImg" src="" alt="1x1 Photo Preview"
                   style="width: 100%; height: 100%; object-fit: cover; display: none;">
               </div>
             </div>
             <div style="flex: 1; min-width: 240px;">
-              <label class="form-label" style="font-weight: 700; margin-bottom: 0.25rem;">Student 2" x 2" Photo</label>
+              <label class="form-label" style="font-weight: 700; margin-bottom: 0.25rem;">Student 1" x 1" Photo (2.54 cm × 2.54 cm)</label>
               <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-                Upload a recent 2" x 2" colored photo (PNG or JPG). The photo will automatically be stamped into the
+                Upload a recent 1" x 1" (2.54 cm × 2.54 cm) colored photo (PNG or JPG). The photo will automatically be stamped into the
                 photo box on your generated 201-FILE PDF.
               </p>
               <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <input type="file" id="studentPhotoInput" accept="image/png, image/jpeg, image/jpg"
                   style="display: none;" onchange="handlePhotoSelect(event)">
                 <button type="button" class="btn btn-sm btn-primary"
-                  onclick="document.getElementById('studentPhotoInput').click()">📷 Upload 2x2 Photo</button>
+                  onclick="document.getElementById('studentPhotoInput').click()">📷 Upload 1x1 Photo</button>
                 <button type="button" class="btn btn-sm btn-secondary" id="clearPhotoBtn" onclick="clearPhoto()"
                   style="display: none;">✕ Remove</button>
               </div>
@@ -643,7 +643,7 @@
       <div class="page-header">
         <div>
           <h2>My Official 201-FILE</h2>
-          <p>Generated 2-page BSIT PDF file filed under your assigned section folder.</p>
+          <p>Generated official BSIT PDF file filed under your assigned section folder.</p>
         </div>
         <div id="sifDownloadHeaderBtns"></div>
       </div>
@@ -676,7 +676,7 @@
       reader.onload = function (evt) {
         currentPhotoBase64 = evt.target.result;
         displayPhotoPreview(currentPhotoBase64);
-        App.showToast('2" x 2" Photo uploaded! ✓');
+        App.showToast('1" x 1" Photo uploaded! ✓');
       };
       reader.readAsDataURL(file);
     }
