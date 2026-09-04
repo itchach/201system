@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,9 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
   <style>
     /* Admin Specific Styling Enhancements */
     .hero-banner {
@@ -29,6 +32,7 @@
       position: relative;
       overflow: hidden;
     }
+
     .hero-banner::before {
       content: '';
       position: absolute;
@@ -36,46 +40,54 @@
       top: -40px;
       width: 220px;
       height: 220px;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(255,255,255,0) 70%);
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
       border-radius: var(--radius-full);
       pointer-events: none;
     }
+
     .hero-content h2 {
       color: #ffffff;
       font-size: 1.85rem;
       margin-bottom: 0.4rem;
     }
+
     .hero-content p {
       color: #d1fae5;
       font-size: 0.95rem;
       max-width: 600px;
     }
+
     .hero-actions {
       display: flex;
       gap: 0.85rem;
       flex-wrap: wrap;
     }
+
     .hero-btn-white {
       background: #ffffff;
       color: #064e3b;
       font-weight: 700;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
+
     .hero-btn-white:hover {
       background: #f0fdf4;
       color: #047857;
       transform: translateY(-2px);
     }
+
     .hero-btn-trans {
       background: rgba(255, 255, 255, 0.15);
       color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.3);
       backdrop-filter: blur(5px);
     }
+
     .hero-btn-trans:hover {
       background: rgba(255, 255, 255, 0.25);
       color: #ffffff;
     }
+
     .folder-icon-wrapper {
       width: 42px;
       height: 42px;
@@ -87,6 +99,7 @@
       justify-content: center;
       font-size: 1.35rem;
     }
+
     .student-avatar {
       width: 34px;
       height: 34px;
@@ -102,6 +115,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Navigation -->
@@ -109,11 +123,12 @@
     <div class="nav-container">
       <a href="/admin.html" class="brand">
         <div class="brand-logo" title="Olivarez College">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
         </div>
         <div class="brand-text">
@@ -148,7 +163,7 @@
 
     <!-- 1. DASHBOARD TAB -->
     <div id="dashboardTab" class="tab-pane">
-      
+
       <!-- Hero Banner -->
       <div class="hero-banner">
         <div class="hero-content">
@@ -193,7 +208,8 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
           <div>
             <h3 style="font-size: 1.25rem;">Section Digital Filing Cabinets</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Overview of student registrations and generated PDF files filed under each section</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Overview of student registrations and generated PDF
+              files filed under each section</p>
           </div>
           <button class="btn btn-sm btn-secondary" onclick="showTab('sectionsTab')">Manage All Sections →</button>
         </div>
@@ -210,7 +226,10 @@
               </tr>
             </thead>
             <tbody id="dashboardSectionsTbody">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sections...</td></tr>
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sections...
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -222,17 +241,20 @@
       <div class="page-header">
         <div>
           <h2>Dynamic Section Management</h2>
-          <p>Create and organize sections. Sections created here automatically become available in the student web form.</p>
+          <p>Create and organize sections. Sections created here automatically become available in the student web form.
+          </p>
         </div>
         <button class="btn btn-primary" onclick="openAddSectionModal()">+ Add New Section</button>
       </div>
 
       <!-- Section Filing Cabinet Cards -->
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <div>
             <h3 style="font-size: 1.25rem;">Section Filing Cabinet Folders</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Click any folder to view and download all student 201-FILEs organized under that section</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Click any folder to view and download all student
+              201-FILEs organized under that section</p>
           </div>
           <div style="display: flex; gap: 0.4rem;">
             <button class="btn btn-sm btn-secondary" onclick="filterSectionGrid('all')">All</button>
@@ -283,13 +305,8 @@
         <div class="search-box">
           <div class="search-input-wrapper">
             <span class="search-icon">🔍</span>
-            <input 
-              type="text" 
-              id="studentSearchInput" 
-              class="form-control" 
-              placeholder="Search by Student ID, Name, or School Email..."
-              oninput="debouncedSearchStudents()"
-            >
+            <input type="text" id="studentSearchInput" class="form-control"
+              placeholder="Search by Student ID, Name, or School Email..." oninput="debouncedSearchStudents()">
           </div>
 
           <div style="min-width: 200px;">
@@ -318,7 +335,10 @@
               </tr>
             </thead>
             <tbody id="studentsTableTbody">
-              <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student records...</td></tr>
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student
+                  records...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -338,11 +358,12 @@
       <div class="card">
         <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Active School PDF Template</h3>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
-          Default official template: <strong>Olivarez College - College of Computer Studies - Student's Personal Information Sheet (BSIT)</strong>
+          Default official template: <strong>Olivarez College - College of Computer Studies - Student's Personal
+            Information Sheet (BSIT)</strong>
         </p>
 
         <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
-          <a href="/api/files/template/1/view" target="_blank" class="btn btn-secondary">👁   View Blank Template PDF</a>
+          <a href="/api/files/template/1/view" target="_blank" class="btn btn-secondary">👁 View Blank Template PDF</a>
           <span class="badge badge-success">High-Fidelity Official Form Stamping Active</span>
         </div>
 
@@ -368,8 +389,10 @@
       <div class="card">
         <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Field Mapping Architecture</h3>
         <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">
-          The system automatically maps web form inputs (Personal Info, Parents, Educational Background, Emergency Contacts) onto the official PDF fields. 
-          <strong>Section is preserved as internal file-management metadata</strong> and is not inserted into the PDF unless explicitly mapped.
+          The system automatically maps web form inputs (Personal Info, Parents, Educational Background, Emergency
+          Contacts) onto the official PDF fields.
+          <strong>Section is preserved as internal file-management metadata</strong> and is not inserted into the PDF
+          unless explicitly mapped.
         </p>
         <div class="table-container">
           <table>
@@ -382,14 +405,54 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td><strong>Student ID</strong></td><td>student_id / Header metadata</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Full Name (Last, First, Middle)</strong></td><td>NAME (Last Name) (First Name) (Middle Name)</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Addresses & Contacts</strong></td><td>City Address, Provincial Address, Landline, Mobile</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Personal Demographics</strong></td><td>Age, Gender, Civil Status, Nationality, Religion, Birthdate</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Ordinal Position & Siblings</strong></td><td>Checkboxes (1st..4th Child), Boy/s, Girl/s</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Father & Mother Information</strong></td><td>Occupations, Addresses, Educational Attainment, Contacts</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Educational Background</strong></td><td>College (Transferee), High School, Elementary</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Emergency Contact</strong></td><td>Name & Relationship, Complete Address, Contact Numbers</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr>
+                <td><strong>Student ID</strong></td>
+                <td>student_id / Header metadata</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Full Name (Last, First, Middle)</strong></td>
+                <td>NAME (Last Name) (First Name) (Middle Name)</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Addresses & Contacts</strong></td>
+                <td>City Address, Provincial Address, Landline, Mobile</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Personal Demographics</strong></td>
+                <td>Age, Gender, Civil Status, Nationality, Religion, Birthdate</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Ordinal Position & Siblings</strong></td>
+                <td>Checkboxes (1st..4th Child), Boy/s, Girl/s</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Father & Mother Information</strong></td>
+                <td>Occupations, Addresses, Educational Attainment, Contacts</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Educational Background</strong></td>
+                <td>College (Transferee), High School, Elementary</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
+              <tr>
+                <td><strong>Emergency Contact</strong></td>
+                <td>Name & Relationship, Complete Address, Contact Numbers</td>
+                <td>Page 1</td>
+                <td><span class="badge badge-success">Mapped</span></td>
+              </tr>
               <tr style="background: #f8fafc;">
                 <td><strong>Section (e.g. 2B, 5A)</strong></td>
                 <td><em>Internal Directory Storage: uploads/sifs/{section}/</em></td>
@@ -449,11 +512,13 @@
       <form onsubmit="handleCreateSection(event)">
         <div class="modal-body">
           <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-            When you create a section, it will immediately appear in the student web form and organize future 201-FILE PDFs under this section folder.
+            When you create a section, it will immediately appear in the student web form and organize future 201-FILE
+            PDFs under this section folder.
           </p>
           <div class="form-group">
             <label class="form-label required" for="newSectionName">Section Name</label>
-            <input type="text" id="newSectionName" class="form-control" placeholder="e.g. 5A or BSIT-3B" required autofocus>
+            <input type="text" id="newSectionName" class="form-control" placeholder="e.g. 5A or BSIT-3B" required
+              autofocus>
           </div>
         </div>
         <div class="modal-footer">
@@ -502,8 +567,10 @@
             <label class="form-label required" for="moveTargetSectionId">New Section</label>
             <select id="moveTargetSectionId" class="form-control" required></select>
           </div>
-          <div style="background: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); font-size: 0.825rem; color: var(--text-muted);">
-            ℹ <strong>Requirement Rule:</strong> Moving a student updates the student record. Historical PDFs remain unchanged unless explicitly regenerated.
+          <div
+            style="background: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); font-size: 0.825rem; color: var(--text-muted);">
+            ℹ <strong>Requirement Rule:</strong> Moving a student updates the student record. Historical PDFs remain
+            unchanged unless explicitly regenerated.
           </div>
         </div>
         <div class="modal-footer">
@@ -517,10 +584,12 @@
   <!-- 4. Section Drilldown Modal (View all students in section) -->
   <div class="modal-backdrop" id="sectionViewModal">
     <div class="modal-dialog" style="max-width: 820px;">
-      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <div class="modal-header"
+        style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
         <h3 id="sectionViewTitle" style="margin: 0;">Section Students</h3>
         <div style="display: flex; gap: 0.6rem; align-items: center;">
-          <button id="modalRegenAllBtn" class="btn btn-sm btn-primary" onclick="handleSectionModalRegenAll()" title="Re-generate all 201-FILE PDFs in this section">⚡ Re-Generate All in Section</button>
+          <button id="modalRegenAllBtn" class="btn btn-sm btn-primary" onclick="handleSectionModalRegenAll()"
+            title="Re-generate all 201-FILE PDFs in this section"> Re-Generate All in Section</button>
           <button class="modal-close" onclick="App.closeModal('sectionViewModal')">&times;</button>
         </div>
       </div>
@@ -558,8 +627,10 @@
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label required" for="newUserEmail">School Google Workspace Email</label>
-            <input type="email" id="newUserEmail" class="form-control" placeholder="student@olivarezcollege.edu.ph" required>
-            <small style="color: var(--text-muted); font-size: 0.75rem;">Only <strong>@olivarezcollege.edu.ph</strong> accounts are permitted. Personal Gmail accounts are not allowed.</small>
+            <input type="email" id="newUserEmail" class="form-control" placeholder="student@olivarezcollege.edu.ph"
+              required>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Only <strong>@olivarezcollege.edu.ph</strong>
+              accounts are permitted. Personal Gmail accounts are not allowed.</small>
           </div>
           <div class="form-group">
             <label class="form-label required" for="newUserName">Full Name</label>
@@ -572,14 +643,19 @@
               <option value="admin">Administrator</option>
             </select>
           </div>
-          <div class="form-group" id="addUserPasscodeGroup" style="display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.75rem;">
-            <label class="form-label required" style="color: #991b1b; font-weight: 700;" for="newAdminPasscode">Admin Security Passcode</label>
+          <div class="form-group" id="addUserPasscodeGroup"
+            style="display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.75rem;">
+            <label class="form-label required" style="color: #991b1b; font-weight: 700;" for="newAdminPasscode">Admin
+              Security Passcode</label>
             <p style="font-size: 0.78rem; color: #b91c1c; margin-bottom: 0.5rem;">
-              Enter the Administrator Security Passcode to authorize granting full administrator privileges to this account.
+              Enter the Administrator Security Passcode to authorize granting full administrator privileges to this
+              account.
             </p>
             <div style="position: relative;">
-              <input type="password" id="newAdminPasscode" class="form-control" placeholder="Enter Admin Security Passcode">
-              <span onclick="togglePasscodeVisibility('newAdminPasscode', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+              <input type="password" id="newAdminPasscode" class="form-control"
+                placeholder="Enter Admin Security Passcode">
+              <span onclick="togglePasscodeVisibility('newAdminPasscode', this)"
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
             </div>
           </div>
         </div>
@@ -604,22 +680,27 @@
           <p id="elevateUserDesc" style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 1rem;">
             You are granting full administrator permissions to this account.
           </p>
-          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem;">
+          <div
+            style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem;">
             <p style="font-size: 0.8rem; color: #991b1b; margin: 0;">
-              ⚠️ <strong>Security Notice:</strong> Administrators have full access to view, edit, regenerate, and delete all student 201-FILEs and section records.
+              ⚠️ <strong>Security Notice:</strong> Administrators have full access to view, edit, regenerate, and delete
+              all student 201-FILEs and section records.
             </p>
           </div>
           <div class="form-group">
             <label class="form-label required" for="elevatePasscode">Admin Security Passcode</label>
             <div style="position: relative;">
-              <input type="password" id="elevatePasscode" class="form-control" placeholder="Enter Admin Security Passcode" required>
-              <span onclick="togglePasscodeVisibility('elevatePasscode', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+              <input type="password" id="elevatePasscode" class="form-control"
+                placeholder="Enter Admin Security Passcode" required>
+              <span onclick="togglePasscodeVisibility('elevatePasscode', this)"
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="App.closeModal('elevateAdminModal')">Cancel</button>
-          <button type="submit" class="btn" style="background: #dc2626; color: white; font-weight: 700;">Grant Admin Permission</button>
+          <button type="submit" class="btn" style="background: #dc2626; color: white; font-weight: 700;">Grant Admin
+            Permission</button>
         </div>
       </form>
     </div>
@@ -637,7 +718,8 @@
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label required" for="templateName">Template Name</label>
-            <input type="text" id="templateName" class="form-control" placeholder="e.g. Olivarez BSIT 201-FILE 2026" required>
+            <input type="text" id="templateName" class="form-control" placeholder="e.g. Olivarez BSIT 201-FILE 2026"
+              required>
           </div>
           <div class="form-group">
             <label class="form-label" for="templateVersion">Version</label>
@@ -649,7 +731,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="App.closeModal('uploadTemplateModal')">Cancel</button>
+          <button type="button" class="btn btn-secondary"
+            onclick="App.closeModal('uploadTemplateModal')">Cancel</button>
           <button type="submit" class="btn btn-primary">Upload Template</button>
         </div>
       </form>
@@ -867,7 +950,7 @@
 
     function populateSectionDropdowns(sections) {
       const active = sections.filter(s => s.status === 'active');
-      
+
       const filterSelect = document.getElementById('studentSectionFilter');
       filterSelect.innerHTML = '<option value="all">All Sections</option>';
       active.forEach(s => {
@@ -916,7 +999,7 @@
             </div>
           </div>
           <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
-            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); regenerateSectionAll(${s.id}, '${s.name}')" title="Re-Generate all student PDFs in Section ${s.name}">⚡ Re-Gen All</button>
+            <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); regenerateSectionAll(${s.id}, '${s.name}')" title="Re-Generate all student PDFs in Section ${s.name}"> Re-Gen All</button>
             <span style="font-size: 0.78rem; color: var(--primary); font-weight: 700;">Open Folder ➔</span>
           </div>
         </div>
@@ -937,7 +1020,7 @@
           <td><strong>${s.sif_count}</strong> generated</td>
           <td>${new Date(s.created_at).toLocaleDateString()}</td>
           <td style="text-align: right; white-space: nowrap;">
-            <button class="btn btn-sm btn-secondary" onclick="regenerateSectionAll(${s.id}, '${s.name}')" title="Re-Generate all student PDFs in Section ${s.name}">⚡ Re-Gen All</button>
+            <button class="btn btn-sm btn-secondary" onclick="regenerateSectionAll(${s.id}, '${s.name}')" title="Re-Generate all student PDFs in Section ${s.name}"> Re-Gen All</button>
             <button class="btn btn-sm btn-secondary" onclick="openEditSectionModal(${s.id}, '${s.name}')">Rename</button>
             <button class="btn btn-sm ${s.status === 'active' ? 'btn-secondary' : 'btn-primary'}" onclick="toggleSectionStatus(${s.id}, '${s.status === 'active' ? 'archived' : 'active'}')">
               ${s.status === 'active' ? 'Archive' : 'Reactivate'}
@@ -1070,7 +1153,7 @@
                 ${s.generated_file_id ? `
                   <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview PDF">👁 View</button>
                   <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download PDF">⬇ Download</a>
-                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Re-Generate SIF PDF on server">⚡ Re-Gen</button>
+                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Re-Generate SIF PDF on server"> Re-Gen</button>
                   <button class="btn btn-sm btn-danger" onclick="removeSectionFile(${s.generated_file_id}, '${s.file_name}', ${sectionId}, '${sectionName}')" title="Remove File">🗑 Remove</button>
                 ` : `
                   <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Generate Official 201-FILE PDF from database">💾 Generate PDF</button>
@@ -1230,7 +1313,7 @@
                 ${s.generated_file_id ? `
                   <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE PDF">⬇ Download</a>
                   <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE PDF">👁 View</button>
-                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF from database">⚡ Re-Gen</button>
+                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF from database"> Re-Gen</button>
                   <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File from Section">🗑 File</button>
                 ` : `
                   <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id})" title="Generate Official 201-FILE PDF from submitted information">💾 Generate PDF</button>
@@ -1554,5 +1637,5 @@
     }
   </script>
 </body>
-</html>
 
+</html>
