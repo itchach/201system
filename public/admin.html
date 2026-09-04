@@ -389,7 +389,7 @@
               <tr><td><strong>Ordinal Position & Siblings</strong></td><td>Checkboxes (1st..4th Child), Boy/s, Girl/s</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
               <tr><td><strong>Father & Mother Information</strong></td><td>Occupations, Addresses, Educational Attainment, Contacts</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
               <tr><td><strong>Educational Background</strong></td><td>College (Transferee), High School, Elementary</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
-              <tr><td><strong>Emergency Contact</strong></td><td>Name & Relationship, Complete Address, Contact Numbers</td><td>Page 2</td><td><span class="badge badge-success">Mapped</span></td></tr>
+              <tr><td><strong>Emergency Contact</strong></td><td>Name & Relationship, Complete Address, Contact Numbers</td><td>Page 1</td><td><span class="badge badge-success">Mapped</span></td></tr>
               <tr style="background: #f8fafc;">
                 <td><strong>Section (e.g. 2B, 5A)</strong></td>
                 <td><em>Internal Directory Storage: uploads/sifs/{section}/</em></td>
@@ -409,7 +409,10 @@
           <h2>Authorized School Accounts</h2>
           <p>Authorize school Google Workspace accounts and manage role permissions.</p>
         </div>
-        <button class="btn btn-primary" onclick="openAddUserModal()">+ Add Authorized User</button>
+        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="openChangePasscodeModal()">🔑 Admin Passcode</button>
+          <button class="btn btn-primary" onclick="openAddUserModal()">+ Add Authorized User</button>
+        </div>
       </div>
 
       <div class="card">
@@ -565,15 +568,92 @@
           </div>
           <div class="form-group">
             <label class="form-label required" for="newUserRole">Role</label>
-            <select id="newUserRole" class="form-control">
+            <select id="newUserRole" class="form-control" onchange="handleUserRoleChange()">
               <option value="student">Student</option>
               <option value="admin">Administrator</option>
             </select>
+          </div>
+          <div class="form-group" id="addUserPasscodeGroup" style="display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.75rem;">
+            <label class="form-label required" style="color: #991b1b; font-weight: 700;" for="newAdminPasscode">Admin Security Passcode</label>
+            <p style="font-size: 0.78rem; color: #b91c1c; margin-bottom: 0.5rem;">
+              Enter the Administrator Security Passcode to authorize granting full administrator privileges to this account.
+            </p>
+            <div style="position: relative;">
+              <input type="password" id="newAdminPasscode" class="form-control" placeholder="Enter Admin Security Passcode">
+              <span onclick="togglePasscodeVisibility('newAdminPasscode', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="App.closeModal('addUserModal')">Cancel</button>
           <button type="submit" class="btn btn-primary">Add Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Elevate User to Admin Modal -->
+  <div class="modal-backdrop" id="elevateAdminModal">
+    <div class="modal-dialog">
+      <div class="modal-header" style="background: linear-gradient(135deg, #7f1d1d, #991b1b); color: white;">
+        <h3 style="color: white; margin: 0;">🛡️ Grant Administrator Privileges</h3>
+        <button class="modal-close" style="color: white;" onclick="App.closeModal('elevateAdminModal')">&times;</button>
+      </div>
+      <form onsubmit="handleConfirmElevateAdmin(event)">
+        <input type="hidden" id="elevateUserId">
+        <div class="modal-body">
+          <p id="elevateUserDesc" style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 1rem;">
+            You are granting full administrator permissions to this account.
+          </p>
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem;">
+            <p style="font-size: 0.8rem; color: #991b1b; margin: 0;">
+              ⚠️ <strong>Security Notice:</strong> Administrators have full access to view, edit, regenerate, and delete all student 201-FILEs and section records.
+            </p>
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="elevatePasscode">Admin Security Passcode</label>
+            <div style="position: relative;">
+              <input type="password" id="elevatePasscode" class="form-control" placeholder="Enter Admin Security Passcode" required>
+              <span onclick="togglePasscodeVisibility('elevatePasscode', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('elevateAdminModal')">Cancel</button>
+          <button type="submit" class="btn" style="background: #dc2626; color: white; font-weight: 700;">Grant Admin Permission</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Admin Security Passcode Modal -->
+  <div class="modal-backdrop" id="changePasscodeModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>🔑 Change Admin Security Passcode</h3>
+        <button class="modal-close" onclick="App.closeModal('changePasscodeModal')">&times;</button>
+      </div>
+      <form onsubmit="handleChangePasscode(event)">
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            The Admin Security Passcode is required whenever granting or delegating administrator permissions.
+          </p>
+          <div class="form-group">
+            <label class="form-label required" for="currentPasscodeInput">Current Passcode</label>
+            <input type="password" id="currentPasscodeInput" class="form-control" required placeholder="Enter current passcode">
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="newPasscodeInput">New Passcode</label>
+            <input type="password" id="newPasscodeInput" class="form-control" required minlength="6" placeholder="At least 6 characters">
+          </div>
+          <div class="form-group">
+            <label class="form-label required" for="confirmPasscodeInput">Confirm New Passcode</label>
+            <input type="password" id="confirmPasscodeInput" class="form-control" required minlength="6" placeholder="Re-enter new passcode">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('changePasscodeModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Passcode</button>
         </div>
       </form>
     </div>
@@ -1338,7 +1418,7 @@
               <button class="btn btn-sm ${u.status === 'active' ? 'btn-secondary' : 'btn-primary'}" onclick="toggleUserStatus(${u.id}, '${u.status === 'active' ? 'inactive' : 'active'}')">
                 ${u.status === 'active' ? 'Deactivate' : 'Activate'}
               </button>
-              <button class="btn btn-sm btn-secondary" onclick="toggleUserRole(${u.id}, '${u.role === 'admin' ? 'student' : 'admin'}')">
+              <button class="btn btn-sm btn-secondary" onclick="toggleUserRole(${u.id}, '${u.role === 'admin' ? 'student' : 'admin'}', '${u.name ? u.name.replace(/'/g, "\\'") : 'User'}', '${u.email}')">
                 Make ${u.role === 'admin' ? 'Student' : 'Admin'}
               </button>
               <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Remove</button>
@@ -1350,9 +1430,25 @@
       }
     }
 
+    function handleUserRoleChange() {
+      const role = document.getElementById('newUserRole').value;
+      const group = document.getElementById('addUserPasscodeGroup');
+      const passInput = document.getElementById('newAdminPasscode');
+      if (role === 'admin') {
+        group.style.display = 'block';
+        passInput.required = true;
+      } else {
+        group.style.display = 'none';
+        passInput.required = false;
+        passInput.value = '';
+      }
+    }
+
     function openAddUserModal() {
       document.getElementById('newUserEmail').value = '';
       document.getElementById('newUserName').value = '';
+      document.getElementById('newUserRole').value = 'student';
+      handleUserRoleChange();
       App.openModal('addUserModal');
     }
 
@@ -1361,12 +1457,18 @@
       const email = document.getElementById('newUserEmail').value;
       const name = document.getElementById('newUserName').value;
       const role = document.getElementById('newUserRole').value;
+      const adminPasscode = document.getElementById('newAdminPasscode').value;
+
+      if (role === 'admin' && !adminPasscode) {
+        App.showToast('Admin Security Passcode is required to authorize creating an Administrator account', 'warning');
+        return;
+      }
 
       try {
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name, role })
+          body: JSON.stringify({ email, name, role, adminPasscode })
         });
         const data = await res.json();
 
@@ -1375,7 +1477,7 @@
           return;
         }
 
-        App.showToast('Authorized user added! ✓');
+        App.showToast(data.message || 'Authorized user added! ✓');
         App.closeModal('addUserModal');
         await loadUsers();
       } catch (err) {
@@ -1404,24 +1506,103 @@
       }
     }
 
-    async function toggleUserRole(id, role) {
+    function toggleUserRole(id, role, name, email) {
+      if (role === 'admin') {
+        document.getElementById('elevateUserId').value = id;
+        document.getElementById('elevateUserDesc').innerHTML = `You are granting full administrator permissions to <strong>${name}</strong> (<code>${email}</code>).`;
+        document.getElementById('elevatePasscode').value = '';
+        App.openModal('elevateAdminModal');
+      } else {
+        if (!confirm(`Are you sure you want to change ${name}'s role to Student?`)) return;
+        performRoleUpdate(id, 'student');
+      }
+    }
+
+    async function handleConfirmElevateAdmin(e) {
+      e.preventDefault();
+      const id = document.getElementById('elevateUserId').value;
+      const adminPasscode = document.getElementById('elevatePasscode').value;
+      if (!adminPasscode) {
+        App.showToast('Please enter the Admin Security Passcode', 'warning');
+        return;
+      }
+      const success = await performRoleUpdate(id, 'admin', adminPasscode);
+      if (success) {
+        App.closeModal('elevateAdminModal');
+      }
+    }
+
+    async function performRoleUpdate(id, role, adminPasscode = '') {
       try {
         const res = await fetch(`/api/users/${id}/role`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role })
+          body: JSON.stringify({ role, adminPasscode })
         });
         const data = await res.json();
 
         if (!res.ok) {
           App.showToast(data.error || 'Failed to change role', 'error');
-          return;
+          return false;
         }
 
-        App.showToast(`User role updated to ${role} ✓`);
+        App.showToast(`User role updated to ${role.toUpperCase()} ✓`);
         await loadUsers();
+        return true;
       } catch (err) {
         App.showToast('Network error updating user role', 'error');
+        return false;
+      }
+    }
+
+    function togglePasscodeVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    function openChangePasscodeModal() {
+      document.getElementById('currentPasscodeInput').value = '';
+      document.getElementById('newPasscodeInput').value = '';
+      document.getElementById('confirmPasscodeInput').value = '';
+      App.openModal('changePasscodeModal');
+    }
+
+    async function handleChangePasscode(e) {
+      e.preventDefault();
+      const currentPasscode = document.getElementById('currentPasscodeInput').value;
+      const newPasscode = document.getElementById('newPasscodeInput').value;
+      const confirmPasscode = document.getElementById('confirmPasscodeInput').value;
+
+      if (newPasscode !== confirmPasscode) {
+        App.showToast('New passcodes do not match', 'warning');
+        return;
+      }
+      if (newPasscode.length < 6) {
+        App.showToast('Passcode must be at least 6 characters', 'warning');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/settings/admin-passcode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPasscode, newPasscode })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          App.showToast(data.error || 'Failed to update passcode', 'error');
+          return;
+        }
+        App.showToast('Admin Security Passcode updated successfully! ✓');
+        App.closeModal('changePasscodeModal');
+      } catch (err) {
+        App.showToast('Network error updating passcode', 'error');
       }
     }
 

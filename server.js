@@ -1164,15 +1164,36 @@ app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+// Helper to get active Admin Security Passcode
+async function getAdminSecurityPasscode() {
+  try {
+    const row = await getOne("SELECT setting_value FROM system_settings WHERE setting_key = 'admin_security_passcode'");
+    if (row && row.setting_value) return row.setting_value;
+  } catch (e) {
+    // fallback
+  }
+  return process.env.ADMIN_SECURITY_PASSCODE || 'OlivarezAdmin2026!';
+}
+
 // Add authorized school user (Must belong to @olivarezcollege.edu.ph)
 app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
-  const { email, name, role } = req.body;
+  const { email, name, role, adminPasscode } = req.body;
   if (!email || !name) {
     return res.status(400).json({ error: 'Email and full name are required.' });
   }
 
   const cleanEmail = email.trim().toLowerCase();
   const cleanRole = role === 'admin' ? 'admin' : 'student';
+
+  // If granting admin permissions, verify Admin Security Passcode
+  if (cleanRole === 'admin') {
+    const validPasscode = await getAdminSecurityPasscode();
+    if (!adminPasscode || adminPasscode !== validPasscode) {
+      return res.status(403).json({
+        error: 'Invalid Admin Security Passcode. Administrator permissions were not granted.'
+      });
+    }
+  }
 
   // Enforce school domain
   if (!cleanEmail.endsWith(`@${ALLOWED_DOMAIN}`)) {
@@ -1193,7 +1214,7 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
     `, [cleanEmail, name.trim(), cleanRole]);
 
     res.status(201).json({
-      message: 'Authorized user added successfully.',
+      message: `Authorized ${cleanRole === 'admin' ? 'administrator' : 'user'} added successfully.`,
       userId: insert.insertId
     });
   } catch (err) {
@@ -1223,13 +1244,23 @@ app.patch('/api/users/:id/status', requireAuth, requireAdmin, async (req, res) =
   }
 });
 
-// Update user role
+// Update user role (Requires passcode when granting admin permission)
 app.patch('/api/users/:id/role', requireAuth, requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { role } = req.body;
+  const { role, adminPasscode } = req.body;
 
   if (!['admin', 'student'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role.' });
+  }
+
+  // If granting admin permissions, verify Admin Security Passcode
+  if (role === 'admin') {
+    const validPasscode = await getAdminSecurityPasscode();
+    if (!adminPasscode || adminPasscode !== validPasscode) {
+      return res.status(403).json({
+        error: 'Invalid Admin Security Passcode. Administrator permissions were not granted.'
+      });
+    }
   }
 
   try {
@@ -1237,6 +1268,34 @@ app.patch('/api/users/:id/role', requireAuth, requireAdmin, async (req, res) => 
     res.json({ message: `User role updated to ${role}.` });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user role.' });
+  }
+});
+
+// Update Admin Security Passcode (Admin Only)
+app.post('/api/settings/admin-passcode', requireAuth, requireAdmin, async (req, res) => {
+  const { currentPasscode, newPasscode } = req.body;
+  if (!currentPasscode || !newPasscode) {
+    return res.status(400).json({ error: 'Current passcode and new passcode are required.' });
+  }
+  if (newPasscode.length < 6) {
+    return res.status(400).json({ error: 'New passcode must be at least 6 characters long.' });
+  }
+
+  const validPasscode = await getAdminSecurityPasscode();
+  if (currentPasscode !== validPasscode) {
+    return res.status(403).json({ error: 'Current Admin Security Passcode is incorrect.' });
+  }
+
+  try {
+    await execute(`
+      INSERT INTO system_settings (setting_key, setting_value)
+      VALUES ('admin_security_passcode', ?)
+      ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)
+    `, [newPasscode]);
+
+    res.json({ message: 'Admin Security Passcode updated successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update Admin Security Passcode.' });
   }
 });
 

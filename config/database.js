@@ -191,6 +191,20 @@ async function initDatabase() {
     ) ENGINE=InnoDB;
   `);
 
+  // 10. System Settings Table (Passcodes, configs)
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      setting_key VARCHAR(100) PRIMARY KEY,
+      setting_value LONGTEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;
+  `);
+
+  await p.query(`
+    INSERT IGNORE INTO system_settings (setting_key, setting_value)
+    VALUES ('admin_security_passcode', ?)
+  `, [process.env.ADMIN_SECURITY_PASSCODE || 'OlivarezAdmin2026!']);
+
   // Seed Sections
   const [secRows] = await p.query('SELECT COUNT(*) as count FROM sections');
   if (secRows[0].count === 0) {
