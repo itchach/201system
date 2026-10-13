@@ -887,3 +887,262 @@ tbody tr:hover {
     padding: 0 1rem;
   }
 }
+
+/* =========================================================
+   201-FILE STUDENT DOCUMENT MODULE STYLES
+   ========================================================= */
+
+/* Progress Bar */
+.doc-progress-container {
+  background: #f1f5f9;
+  border-radius: var(--radius-full);
+  height: 12px;
+  overflow: hidden;
+  margin: 0.75rem 0;
+  position: relative;
+}
+
+.doc-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+/* Document Category Card */
+.doc-category-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.doc-category-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.doc-category-card.status-verified {
+  border-left: 5px solid var(--success);
+}
+
+.doc-category-card.status-uploaded {
+  border-left: 5px solid #3b82f6;
+}
+
+.doc-category-card.status-rejected {
+  border-left: 5px solid var(--danger);
+}
+
+.doc-category-card.status-missing {
+  border-left: 5px solid #94a3b8;
+}
+
+.doc-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.doc-category-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.doc-category-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.doc-category-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* File list item inside category */
+.doc-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.doc-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  transition: var(--transition);
+}
+
+.doc-file-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.doc-file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 220px;
+  flex: 1;
+}
+
+.doc-file-icon {
+  font-size: 1.35rem;
+}
+
+.doc-file-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-file-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--secondary);
+  word-break: break-all;
+}
+
+.doc-file-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.doc-file-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Status Badges */
+.badge-status-missing {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.badge-status-uploaded {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-status-verified {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-status-rejected {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* Admin Remarks Banner */
+.doc-remarks-box {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  color: #9f1239;
+}
+
+.doc-remarks-box strong {
+  color: #881337;
+}
+
+/* Drag & Drop Upload Zone */
+.dropzone-container {
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.dropzone-container:hover, .dropzone-container.drag-over {
+  border-color: var(--primary);
+  background: #f0fdf4;
+}
+
+.dropzone-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.dropzone-text {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--secondary);
+  margin-bottom: 0.25rem;
+}
+
+.dropzone-subtext {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Seminar Restriction Card */
+.seminar-locked-card {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.seminar-locked-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* Upload progress pulse animation */
+@keyframes progress-pulse {
+  0% { opacity: 1; width: 30%; }
+  50% { opacity: 0.85; width: 80%; }
+  100% { opacity: 1; width: 30%; }
+}

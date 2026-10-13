@@ -198,7 +198,15 @@
           <div class="kpi-icon amber">📄</div>
           <div class="kpi-info">
             <h3 id="statTotalSifs">0</h3>
-            <p>Generated 201-FILE Files</p>
+            <p>Generated 201-FILE PDFs</p>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="border-top: 3px solid #8b5cf6;">
+          <div class="kpi-icon" style="background: #f5f3ff; color: #8b5cf6;">📑</div>
+          <div class="kpi-info">
+            <h3 id="statTotalDocs">0</h3>
+            <p>Uploaded 201 Documents</p>
           </div>
         </div>
       </div>
@@ -304,18 +312,38 @@
       <div class="card" style="padding: 1.25rem;">
         <div class="search-box">
           <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon">🔍 </span>
             <input type="text" id="studentSearchInput" class="form-control"
               placeholder="Search by Student ID, Name, or School Email..." oninput="debouncedSearchStudents()">
           </div>
 
-          <div style="min-width: 200px;">
+          <div style="min-width: 160px;">
             <select id="studentSectionFilter" class="form-control" onchange="loadStudents()">
               <option value="all">All Sections</option>
             </select>
           </div>
 
-          <button class="btn btn-primary" onclick="loadStudents()">Search</button>
+          <div style="min-width: 150px;">
+            <select id="studentYearLevelFilter" class="form-control" onchange="loadStudents()">
+              <option value="all">All Year Levels</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+
+          <div style="min-width: 170px;">
+            <select id="studentDocStatusFilter" class="form-control" onchange="loadStudents()">
+              <option value="all">All Document Statuses</option>
+              <option value="pending">Pending Review ⏳</option>
+              <option value="rejected">Action Required ⚠️</option>
+              <option value="verified">Verified Documents ✓</option>
+              <option value="missing">Missing Documents</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="loadStudents()">Filter</button>
         </div>
       </div>
 
@@ -327,16 +355,17 @@
               <tr>
                 <th>Student ID</th>
                 <th>Student Name</th>
+                <th>Year Level</th>
                 <th>School Email</th>
-                <th>Filing Section</th>
-                <th>Generated 201-FILE File</th>
-                <th>Date Generated</th>
+                <th>Section</th>
+                <th>201-File Documents</th>
+                <th>SIF Form PDF</th>
                 <th style="text-align: right;">Actions</th>
               </tr>
             </thead>
             <tbody id="studentsTableTbody">
               <tr>
-                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student
                   records...</td>
               </tr>
             </tbody>
@@ -758,10 +787,125 @@
     </div>
   </div>
 
+  <!-- 8. Student 201-File Documents Folder Modal (Admin Review & Verification) -->
+  <div class="modal-backdrop" id="studentDocFolderModal">
+    <div class="modal-dialog" style="max-width: 950px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+            <h3 id="adminModalStudentName" style="margin: 0; font-size: 1.35rem;">Student 201 File</h3>
+            <span class="badge badge-primary" id="adminModalSectionBadge">Section —</span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);" id="adminModalStudentMeta">
+            Student ID: — &bull; Email: —
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+          <!-- Verified Year Level Control -->
+          <div style="display: flex; align-items: center; gap: 0.4rem; background: #f8fafc; border: 1px solid var(--border); padding: 4px 8px; border-radius: var(--radius-sm);">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin: 0;" for="adminVerifiedYearLevel">Year Level:</label>
+            <select id="adminVerifiedYearLevel" style="font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border);">
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+            <button class="btn btn-sm btn-primary" onclick="handleAdminUpdateYearLevel()" style="padding: 2px 8px; font-size: 0.75rem;">Save</button>
+          </div>
+          <button class="modal-close" onclick="App.closeModal('studentDocFolderModal')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Checklist Progress Card -->
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <strong style="font-size: 0.95rem; color: var(--secondary);">201-File Requirements Checklist</strong>
+            <span id="adminDocProgressRatio" style="font-weight: 700; color: var(--primary);">0 of 0 Verified</span>
+          </div>
+          <div class="doc-progress-container" style="height: 10px; margin: 0.5rem 0;">
+            <div id="adminDocProgressBar" class="doc-progress-bar" style="width: 0%;"></div>
+          </div>
+          <div style="display: flex; gap: 1.25rem; font-size: 0.8rem; color: var(--text-muted); flex-wrap: wrap;">
+            <span><strong id="adminCountVerified" style="color: var(--success);">0</strong> Verified</span>
+            <span><strong id="adminCountPending" style="color: #2563eb;">0</strong> Pending Review</span>
+            <span><strong id="adminCountRejected" style="color: var(--danger);">0</strong> Action Required</span>
+            <span><strong id="adminCountMissing" style="color: #64748b;">0</strong> Missing</span>
+          </div>
+        </div>
+
+        <!-- Categories List -->
+        <div id="adminDocCategoriesContainer">
+          <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student documents...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModal('studentDocFolderModal')">Close Folder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Admin Rejection Modal with Remarks -->
+  <div class="modal-backdrop" id="adminRejectDocModal">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 style="color: #b91c1c;">✕ Reject Document & Request Resubmission</h3>
+        <button class="modal-close" onclick="App.closeModal('adminRejectDocModal')">&times;</button>
+      </div>
+      <form onsubmit="handleConfirmRejectDocument(event)">
+        <input type="hidden" id="rejectDocumentId">
+        <div class="modal-body">
+          <p style="font-size: 0.875rem; margin-bottom: 0.75rem;">
+            Document: <strong id="rejectDocNamePrompt">Filename.pdf</strong>
+          </p>
+          <div class="form-group">
+            <label class="form-label required" for="adminRejectRemarks">Reason for Rejection / Required Corrections</label>
+            <textarea id="adminRejectRemarks" class="form-control" rows="4" placeholder="e.g. Incomplete copy. Please re-upload with official registrar stamp or signed page." required></textarea>
+            <small style="color: var(--text-muted); font-size: 0.75rem;">
+              These remarks will immediately be displayed on the student's portal with guidance for resubmission.
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('adminRejectDocModal')">Cancel</button>
+          <button type="submit" class="btn" style="background: #dc2626; color: white; font-weight: 700;">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 10. Admin Document Inline Viewer Modal -->
+  <div class="modal-backdrop" id="adminDocPreviewModal">
+    <div class="modal-dialog" style="max-width: 900px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="adminDocPreviewTitle" style="font-size: 1.15rem; margin: 0;">Document Preview</h3>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a id="adminDocPreviewDownloadBtn" href="#" class="btn btn-sm btn-primary" download>⬇ Download</a>
+          <button class="modal-close" onclick="App.closeModal('adminDocPreviewModal')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 1rem; min-height: 480px; max-height: 80vh; overflow: auto; text-align: center;">
+        <iframe id="adminDocPreviewIframe" src="" style="width: 100%; height: 560px; border: none; border-radius: 8px; display: none;"></iframe>
+        <img id="adminDocPreviewImg" src="" alt="Document Preview" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 8px; display: none; margin: 0 auto;">
+        <div id="adminDocPreviewLoading" style="padding: 3rem; color: var(--text-muted);">Loading preview...</div>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/app.js"></script>
   <script>
     let allSections = [];
     let searchDebounceTimeout = null;
+
+    // Helper: Escape HTML to prevent XSS
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await App.checkAuth();
@@ -895,6 +1039,9 @@
         document.getElementById('statTotalSections').textContent = data.totalSections;
         document.getElementById('statTotalStudents').textContent = data.totalStudents;
         document.getElementById('statTotalSifs').textContent = data.totalSifs;
+        if (document.getElementById('statTotalDocs')) {
+          document.getElementById('statTotalDocs').textContent = data.totalDocuments || 0;
+        }
 
         const tbody = document.getElementById('dashboardSectionsTbody');
         if (!data.sections || data.sections.length === 0) {
@@ -1274,19 +1421,33 @@
     async function loadStudents() {
       const query = document.getElementById('studentSearchInput').value;
       const sectionId = document.getElementById('studentSectionFilter').value;
+      const yearLevel = (document.getElementById('studentYearLevelFilter') || {}).value || 'all';
+      const status = (document.getElementById('studentDocStatusFilter') || {}).value || 'all';
 
       try {
-        const res = await fetch(`/api/students?query=${encodeURIComponent(query)}&sectionId=${encodeURIComponent(sectionId)}`);
+        const url = `/api/students?query=${encodeURIComponent(query)}&sectionId=${encodeURIComponent(sectionId)}&yearLevel=${encodeURIComponent(yearLevel)}&status=${encodeURIComponent(status)}`;
+        const res = await fetch(url);
         const students = await res.json();
 
         const tbody = document.getElementById('studentsTableTbody');
         if (!students || students.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching student records found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching student records found.</td></tr>';
           return;
         }
 
         tbody.innerHTML = students.map(s => {
           const initials = ((s.first_name || '')[0] || '') + ((s.last_name || '')[0] || '');
+
+          // Document Progress Badge
+          let docBadge = '<span class="badge badge-status-missing" style="font-size: 0.72rem;">No Uploads</span>';
+          if (s.rejected_documents > 0) {
+            docBadge = `<span class="badge badge-status-rejected" style="font-size: 0.72rem;">⚠️ ${s.rejected_documents} Action Required</span>`;
+          } else if (s.pending_documents > 0) {
+            docBadge = `<span class="badge badge-status-uploaded" style="font-size: 0.72rem;">⏳ ${s.pending_documents} Pending</span>`;
+          } else if (s.verified_documents > 0) {
+            docBadge = `<span class="badge badge-status-verified" style="font-size: 0.72rem;">✓ ${s.verified_documents} Verified</span>`;
+          }
+
           return `
             <tr>
               <td><strong>${s.student_id || '—'}</strong></td>
@@ -1299,8 +1460,17 @@
                   </div>
                 </div>
               </td>
+              <td><span class="badge badge-secondary">${s.year_level || '1st Year'}</span></td>
               <td>${s.email}</td>
               <td><span class="badge badge-primary">Section ${s.section_name || 'Unassigned'}</span></td>
+              <td>
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                  <div>${docBadge}</div>
+                  <button class="btn btn-sm btn-primary" onclick="openStudentDocumentsModal(${s.id})" style="padding: 3px 10px; font-size: 0.78rem;">
+                    📁 Open 201 File
+                  </button>
+                </div>
+              </td>
               <td>
                 ${s.generated_file_id ? `
                   <a href="javascript:void(0)" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" style="font-weight: 600; color: var(--primary);">
@@ -1308,25 +1478,396 @@
                   </a>
                 ` : '<span class="badge badge-warning">Pending</span>'}
               </td>
-              <td>${s.sif_created_at ? new Date(s.sif_created_at).toLocaleDateString() : '—'}</td>
               <td style="text-align: right; white-space: nowrap;">
                 ${s.generated_file_id ? `
-                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE PDF">⬇ Download</a>
-                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE PDF">👁 View</button>
-                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF from database"> Re-Gen</button>
-                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File from Section">🗑 File</button>
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE PDF">⬇</a>
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE PDF">👁</button>
+                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF">🔄</button>
+                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File">🗑</button>
                 ` : `
-                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id})" title="Generate Official 201-FILE PDF from submitted information">💾 Generate PDF</button>
+                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id})" title="Generate Official 201-FILE PDF">💾 SIF</button>
                 `}
-                <button class="btn btn-sm btn-secondary" onclick="openMoveStudentModal(${s.id}, '${s.first_name} ${s.last_name}', ${s.section_id})" title="Move Section">⇄ Move</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">✕ Delete</button>
+                <button class="btn btn-sm btn-secondary" onclick="openMoveStudentModal(${s.id}, '${s.first_name} ${s.last_name}', ${s.section_id})" title="Move Section">⇄</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">✕</button>
               </td>
             </tr>
           `;
         }).join('');
       } catch (err) {
-        console.error('Error searching students:', err);
+        console.error('Error loading students:', err);
+        App.showToast('Failed to load student records', 'error');
       }
+    }
+
+    // =========================================================
+    // ADMIN 201-FILE DOCUMENT REVIEW & VERIFICATION LOGIC
+    // =========================================================
+    let currentAdminStudentOverview = null;
+    let pendingRejectDocId = null;
+
+    // Open Student 201 File Drawer / Modal
+    async function openStudentDocumentsModal(studentId) {
+      currentAdminStudentOverview = null;
+      document.getElementById('adminDocCategoriesContainer').innerHTML = `
+        <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student 201-file cabinet...</p>
+      `;
+      App.openModal('studentDocFolderModal');
+
+      try {
+        const res = await fetch(`/api/admin/students/${studentId}/documents`);
+        if (!res.ok) {
+          throw new Error('Failed to load student 201-file folder.');
+        }
+        const data = await res.json();
+        currentAdminStudentOverview = data;
+        renderAdminDocumentOverview(data);
+      } catch (err) {
+        console.error('Error loading student documents for admin:', err);
+        document.getElementById('adminDocCategoriesContainer').innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: #dc2626;">
+            Failed to load documents: ${err.message}
+          </div>
+        `;
+      }
+    }
+
+    // Render Student 201 File Overview in Modal
+    function renderAdminDocumentOverview(data) {
+      if (!data || !data.student) return;
+
+      const s = data.student;
+      document.getElementById('adminModalStudentName').textContent = `${s.name || 'Student'} (201-File)`;
+      document.getElementById('adminModalSectionBadge').textContent = `Section ${s.sectionName || 'Unassigned'}`;
+      document.getElementById('adminModalStudentMeta').textContent = `Student ID: ${s.student_id || 'Not Set'} • Email: ${s.email}`;
+      document.getElementById('adminVerifiedYearLevel').value = s.yearLevel || '1st Year';
+
+      // Update progress metrics
+      const ch = data.checklist;
+      document.getElementById('adminDocProgressBar').style.width = `${ch.percentage}%`;
+      document.getElementById('adminDocProgressRatio').textContent = `${ch.completedCount} of ${ch.totalCategories} Categories Verified (${ch.percentage}%)`;
+      document.getElementById('adminCountVerified').textContent = ch.completedCount;
+      document.getElementById('adminCountPending').textContent = ch.pendingCount;
+      document.getElementById('adminCountRejected').textContent = ch.rejectedCount;
+      document.getElementById('adminCountMissing').textContent = ch.missingCount;
+
+      const container = document.getElementById('adminDocCategoriesContainer');
+
+      let html = '';
+      data.categories.forEach(cat => {
+        // Locked seminar category check
+        if (cat.seminarOnly && !cat.isEligible) {
+          html += `
+            <div class="seminar-locked-card" style="margin-bottom: 1rem; padding: 1.15rem;">
+              <div class="seminar-locked-icon" style="font-size: 1.25rem; width: 36px; height: 36px;">🔒</div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <strong style="font-size: 0.95rem; color: #475569;">Certificates of Seminars</strong>
+                  <span class="badge badge-secondary" style="font-size: 0.7rem;">3rd & 4th Year Only</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                  Student is currently verified as <strong>${s.yearLevel}</strong>. Seminar certificates are applicable to 3rd-year and 4th-year students only.
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // Category card styling
+        let statusBadgeClass = 'badge-status-missing';
+        let statusBadgeText = 'Missing';
+        let statusCardClass = 'status-missing';
+
+        if (cat.status === 'verified') {
+          statusBadgeClass = 'badge-status-verified';
+          statusBadgeText = 'Verified ✓';
+          statusCardClass = 'status-verified';
+        } else if (cat.status === 'uploaded') {
+          statusBadgeClass = 'badge-status-uploaded';
+          statusBadgeText = 'Pending Review';
+          statusCardClass = 'status-uploaded';
+        } else if (cat.status === 'rejected') {
+          statusBadgeClass = 'badge-status-rejected';
+          statusBadgeText = 'Action Required ⚠️';
+          statusCardClass = 'status-rejected';
+        }
+
+        html += `
+          <div class="doc-category-card ${statusCardClass}" style="margin-bottom: 1rem; padding: 1.25rem;">
+            <div class="doc-category-header" style="margin-bottom: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <h4 style="margin: 0; font-size: 1.05rem; color: var(--secondary);">
+                  ${cat.name}
+                  ${cat.isMultiFile ? '<span style="font-size: 0.7rem; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 9999px; margin-left: 6px;">Multi-File</span>' : ''}
+                </h4>
+              </div>
+              <span class="badge ${statusBadgeClass}">${statusBadgeText}</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              ${cat.description}
+            </p>
+
+            <!-- Files list -->
+            ${cat.files && cat.files.length > 0 ? `
+              <div class="doc-file-list">
+                ${cat.files.map(f => renderAdminFileItem(f, cat)).join('')}
+              </div>
+            ` : `
+              <div style="background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: 6px; padding: 0.65rem 0.85rem; font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+                <span>No document submitted yet.</span>
+                <span class="badge badge-status-missing" style="font-size: 0.7rem;">Missing</span>
+              </div>
+            `}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Helper: Render file row in Admin Modal
+    function renderAdminFileItem(f, cat) {
+      const isPdf = f.original_filename.toLowerCase().endsWith('.pdf');
+      const icon = isPdf ? '📄' : '🖼️';
+
+      const formattedDate = f.uploaded_at ? new Date(f.uploaded_at).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      }) : '—';
+
+      const sizeStr = f.file_size ? App.formatBytes(f.file_size) : '';
+
+      // PIS File Specific Handling
+      if (f.isPis) {
+        return `
+          <div class="doc-file-item">
+            <div class="doc-file-info">
+              <span class="doc-file-icon">📄</span>
+              <div class="doc-file-details">
+                <span class="doc-file-name">${f.original_filename}</span>
+                <span class="doc-file-meta">Auto-Generated Official 201-FILE PDF &bull; ${formattedDate}</span>
+              </div>
+            </div>
+            <div class="doc-file-actions">
+              <span class="badge badge-status-verified" style="font-size: 0.7rem;">Official Form ✓</span>
+              <button class="btn btn-sm btn-secondary" onclick="previewSIF(${f.id}, '${f.original_filename}')">👁 View PDF</button>
+              <a href="/api/files/sif/${f.id}/download" class="btn btn-sm btn-primary">⬇ Download</a>
+            </div>
+          </div>
+        `;
+      }
+
+      let fileBadge = '<span class="badge badge-status-uploaded" style="font-size: 0.7rem;">Pending Review</span>';
+      if (f.upload_status === 'verified') {
+        fileBadge = '<span class="badge badge-status-verified" style="font-size: 0.7rem;">Verified ✓</span>';
+      } else if (f.upload_status === 'rejected') {
+        fileBadge = '<span class="badge badge-status-rejected" style="font-size: 0.7rem;">Rejected ✕</span>';
+      }
+
+      return `
+        <div class="doc-file-item">
+          <div class="doc-file-info">
+            <span class="doc-file-icon">${icon}</span>
+            <div class="doc-file-details">
+              <span class="doc-file-name">${f.original_filename}</span>
+              <span class="doc-file-meta">
+                ${sizeStr ? sizeStr + ' &bull; ' : ''}Uploaded ${formattedDate}
+                ${f.verified_by ? ` &bull; Reviewed by: <strong>${f.verified_by}</strong>` : ''}
+              </span>
+              ${f.admin_remarks ? `
+                <div style="font-size: 0.75rem; color: #b91c1c; margin-top: 3px; background: #fff1f2; padding: 2px 6px; border-radius: 4px; display: inline-block;">
+                  Remarks: ${escapeHtml(f.admin_remarks)}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="doc-file-actions">
+            ${fileBadge}
+            <button class="btn btn-sm btn-secondary" onclick="previewAdminDocument(${f.id}, '${escapeHtml(f.original_filename)}', '${f.mime_type || ''}')">
+              👁 View
+            </button>
+            <a href="/api/student/documents/${f.id}/download" class="btn btn-sm btn-secondary">
+              ⬇ Download
+            </a>
+            ${f.upload_status !== 'verified' ? `
+              <button class="btn btn-sm btn-success" style="background: #10b981; color: white;" onclick="handleAdminVerifyDocument(${f.id}, '${escapeHtml(f.original_filename)}')">
+                ✓ Verify
+              </button>
+            ` : `
+              <button class="btn btn-sm btn-secondary" onclick="handleAdminResetStatus(${f.id}, '${escapeHtml(f.original_filename)}')">
+                ↺ Reset
+              </button>
+            `}
+            ${f.upload_status !== 'rejected' ? `
+              <button class="btn btn-sm btn-danger" style="background: #ef4444; color: white;" onclick="openAdminRejectModal(${f.id}, '${escapeHtml(f.original_filename)}')">
+                ✕ Reject
+              </button>
+            ` : ''}
+            <button class="btn btn-sm btn-secondary" style="color: #dc2626;" onclick="handleAdminDeleteDoc(${f.id}, '${escapeHtml(f.original_filename)}')">
+              🗑
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Admin Update Student Year Level
+    async function handleAdminUpdateYearLevel() {
+      if (!currentAdminStudentOverview || !currentAdminStudentOverview.student) return;
+      const studentId = currentAdminStudentOverview.student.id;
+      const yearLevel = document.getElementById('adminVerifiedYearLevel').value;
+
+      try {
+        const res = await fetch(`/api/admin/students/${studentId}/year-level`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ yearLevel })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update year level.');
+
+        App.showToast(`Verified Year Level updated to ${yearLevel}! ✓`);
+        await openStudentDocumentsModal(studentId);
+        await loadStudents();
+      } catch (err) {
+        App.showToast(err.message, 'error');
+      }
+    }
+
+    // Admin Verify Document
+    async function handleAdminVerifyDocument(docId, docName) {
+      try {
+        const res = await fetch(`/api/admin/documents/${docId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'verified', remarks: null })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to verify document.');
+
+        App.showToast(`Document "${docName}" marked as Verified! ✓`);
+        if (currentAdminStudentOverview) {
+          await openStudentDocumentsModal(currentAdminStudentOverview.student.id);
+        }
+        await loadStudents();
+      } catch (err) {
+        App.showToast(err.message, 'error');
+      }
+    }
+
+    // Admin Reset Status to Uploaded / Pending
+    async function handleAdminResetStatus(docId, docName) {
+      try {
+        const res = await fetch(`/api/admin/documents/${docId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'uploaded', remarks: null })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to reset status.');
+
+        App.showToast(`Document "${docName}" reset to Pending Review.`);
+        if (currentAdminStudentOverview) {
+          await openStudentDocumentsModal(currentAdminStudentOverview.student.id);
+        }
+        await loadStudents();
+      } catch (err) {
+        App.showToast(err.message, 'error');
+      }
+    }
+
+    // Open Admin Rejection Modal
+    function openAdminRejectModal(docId, docName) {
+      pendingRejectDocId = docId;
+      document.getElementById('rejectDocumentId').value = docId;
+      document.getElementById('rejectDocNamePrompt').textContent = docName;
+      document.getElementById('adminRejectRemarks').value = '';
+      App.openModal('adminRejectDocModal');
+    }
+
+    // Confirm Rejection with Remarks
+    async function handleConfirmRejectDocument(e) {
+      e.preventDefault();
+      const docId = document.getElementById('rejectDocumentId').value;
+      const remarks = document.getElementById('adminRejectRemarks').value;
+
+      if (!remarks || !remarks.trim()) {
+        App.showToast('Please provide remarks explaining why the document is rejected.', 'warning');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/documents/${docId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'rejected', remarks: remarks.trim() })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to reject document.');
+
+        App.showToast('Document marked as Rejected with remarks. Student notified! ✓');
+        App.closeModal('adminRejectDocModal');
+        pendingRejectDocId = null;
+        if (currentAdminStudentOverview) {
+          await openStudentDocumentsModal(currentAdminStudentOverview.student.id);
+        }
+        await loadStudents();
+      } catch (err) {
+        App.showToast(err.message, 'error');
+      }
+    }
+
+    // Admin Delete Document
+    async function handleAdminDeleteDoc(docId, docName) {
+      if (!confirm(`Are you sure you want to permanently delete document "${docName}" from this student's 201 file?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/documents/${docId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete document.');
+
+        App.showToast('Document removed from student record! ✓');
+        if (currentAdminStudentOverview) {
+          await openStudentDocumentsModal(currentAdminStudentOverview.student.id);
+        }
+        await loadStudents();
+      } catch (err) {
+        App.showToast(err.message, 'error');
+      }
+    }
+
+    // Admin Document Inline Viewer
+    function previewAdminDocument(docId, fileName, mimeType) {
+      document.getElementById('adminDocPreviewTitle').textContent = fileName;
+      document.getElementById('adminDocPreviewDownloadBtn').href = `/api/student/documents/${docId}/download`;
+
+      const iframe = document.getElementById('adminDocPreviewIframe');
+      const img = document.getElementById('adminDocPreviewImg');
+      const loading = document.getElementById('adminDocPreviewLoading');
+
+      iframe.style.display = 'none';
+      img.style.display = 'none';
+      loading.style.display = 'block';
+
+      const viewUrl = `/api/student/documents/${docId}/view`;
+
+      if (mimeType && mimeType.startsWith('image/')) {
+        img.src = viewUrl;
+        img.onload = () => {
+          loading.style.display = 'none';
+          img.style.display = 'block';
+        };
+        img.onerror = () => {
+          loading.textContent = 'Could not load image preview.';
+        };
+      } else {
+        iframe.src = viewUrl;
+        iframe.onload = () => {
+          loading.style.display = 'none';
+          iframe.style.display = 'block';
+        };
+      }
+
+      App.openModal('adminDocPreviewModal');
     }
 
     function openMoveStudentModal(studentId, studentName, currentSectionId) {

@@ -205,6 +205,63 @@ async function initDatabase() {
     VALUES ('admin_security_passcode', ?)
   `, [process.env.ADMIN_SECURITY_PASSCODE || 'OlivarezAdmin2026!']);
 
+  // Ensure year_level column exists on students table
+  try {
+    const [ylCheck] = await p.query("SHOW COLUMNS FROM students LIKE 'year_level'");
+    if (ylCheck.length === 0) {
+      await p.query("ALTER TABLE students ADD COLUMN year_level VARCHAR(50) NOT NULL DEFAULT '1st Year'");
+      console.log('✓ Added year_level column to students table.');
+    }
+  } catch (err) {
+    console.warn('Note on year_level column check:', err.message);
+  }
+
+  // Sync year_level from existing student_information form_data where available
+  try {
+    await p.query(`
+      UPDATE students s
+      JOIN student_information si ON s.id = si.student_id
+      SET s.year_level = JSON_UNQUOTE(JSON_EXTRACT(si.form_data, '$.yearLevel'))
+      WHERE JSON_EXTRACT(si.form_data, '$.yearLevel') IS NOT NULL
+        AND JSON_UNQUOTE(JSON_EXTRACT(si.form_data, '$.yearLevel')) != ''
+        AND (s.year_level = '1st Year' OR s.year_level IS NULL)
+    `);
+  } catch (err) {}
+
+  // 11. Student Documents Table (Metadata & Status)
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS student_documents (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      student_id INT NOT NULL,
+      document_type VARCHAR(50) NOT NULL,
+      original_filename VARCHAR(255) NOT NULL,
+      storage_key VARCHAR(500) NOT NULL,
+      mime_type VARCHAR(100) NOT NULL,
+      file_size INT NOT NULL,
+      upload_status ENUM('uploaded', 'verified', 'rejected') NOT NULL DEFAULT 'uploaded',
+      uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      verified_by VARCHAR(255) NULL,
+      verified_at DATETIME NULL,
+      admin_remarks TEXT NULL,
+      is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+      deleted_at DATETIME NULL,
+      deleted_by VARCHAR(255) NULL,
+      FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+      INDEX idx_student_id (student_id),
+      INDEX idx_doc_type (document_type),
+      INDEX idx_status (upload_status)
+    ) ENGINE=InnoDB;
+  `);
+
+  // 12. Student Document Files Table (Persistent Storage for Ephemeral Render Environments)
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS student_document_files (
+      document_id INT PRIMARY KEY,
+      file_data LONGBLOB NOT NULL,
+      FOREIGN KEY (document_id) REFERENCES student_documents(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB;
+  `);
+
   // Seed Sections
   const [secRows] = await p.query('SELECT COUNT(*) as count FROM sections');
   if (secRows[0].count === 0) {

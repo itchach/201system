@@ -123,6 +123,104 @@
     </div>
   </div>
 
+  <!-- ==================== STUDENT DOCUMENT MODALS ==================== -->
+
+  <!-- Upload Document Modal -->
+  <div class="modal-backdrop" id="uploadDocModal">
+    <div class="modal-dialog" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="uploadModalTitle">Upload Document</h3>
+        <button class="modal-close" onclick="App.closeModal('uploadDocModal')">&times;</button>
+      </div>
+      <form onsubmit="handleDocumentUploadSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="uploadCategoryKey">
+
+          <p id="uploadCategoryDesc" style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Select a document file to attach to this category in your 201 file.
+          </p>
+
+          <!-- Replace Notice (for single-file categories) -->
+          <div id="uploadReplaceNotice" style="display: none; background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #c2410c;">
+            ⚠️ <strong>Replacing File:</strong> Uploading a new file will replace the existing one in this category. The previous file will be removed.
+          </div>
+
+          <!-- Drag & Drop Zone -->
+          <div class="dropzone-container" id="docDropzone" onclick="document.getElementById('docFileInput').click()">
+            <input type="file" id="docFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" onchange="handleFileSelect(event)">
+            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-text">Click to browse or drag &amp; drop</div>
+            <div class="dropzone-subtext">Accepted formats: PDF, JPG, PNG &bull; Max size: 10MB</div>
+          </div>
+
+          <!-- Selected File Preview -->
+          <div id="selectedFileInfo" style="display: none; background: #f0fdf4; border: 1px solid var(--primary-border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-top: 1rem; display: none;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.5rem;">📄</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem; color: var(--secondary);" id="selectedFileName">filename.pdf</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);" id="selectedFileSize">0 KB</div>
+              </div>
+              <span style="margin-left: auto; color: #059669; font-size: 1.1rem;">✓</span>
+            </div>
+          </div>
+
+          <!-- Upload Progress -->
+          <div id="uploadProgressBox" style="display: none; margin-top: 1rem;">
+            <div style="background: #f1f5f9; border-radius: var(--radius-full); height: 8px; overflow: hidden;">
+              <div style="height: 100%; background: linear-gradient(90deg, #059669, #10b981); border-radius: var(--radius-full); animation: progress-pulse 1.5s ease-in-out infinite; width: 70%;"></div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center;">Uploading and verifying file integrity...</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModal('uploadDocModal')">Cancel</button>
+          <button type="submit" id="uploadSubmitBtn" class="btn btn-primary" disabled>Upload Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Document Inline Viewer Modal -->
+  <div class="modal-backdrop" id="docViewerModal">
+    <div class="modal-dialog" style="max-width: 900px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="docViewerTitle" style="font-size: 1.15rem; margin: 0;">Document Preview</h3>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a id="docViewerDownloadBtn" href="#" class="btn btn-sm btn-primary" download>⬇ Download</a>
+          <button class="modal-close" onclick="App.closeModal('docViewerModal')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 1rem; min-height: 480px; max-height: 80vh; overflow: auto; text-align: center;">
+        <iframe id="docViewerIframe" src="" style="width: 100%; height: 560px; border: none; border-radius: 8px; display: none;"></iframe>
+        <img id="docViewerImg" src="" alt="Document Preview" style="max-width: 100%; max-height: 560px; object-fit: contain; border-radius: 8px; display: none; margin: 0 auto;">
+        <div id="docViewerLoading" style="padding: 3rem; color: var(--text-muted);">Loading preview...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-backdrop" id="confirmDeleteDocModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 style="color: #b91c1c;">🗑 Remove Document</h3>
+        <button class="modal-close" onclick="App.closeModal('confirmDeleteDocModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+          Are you sure you want to remove <strong id="deleteDocNamePrompt">document.pdf</strong> from your 201 file?
+        </p>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.825rem; color: #991b1b;">
+          ⚠️ <strong>Note:</strong> This action cannot be undone. You will need to re-upload the document if it was removed by mistake. Documents that have been <strong>Verified</strong> by the administrator cannot be deleted.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModal('confirmDeleteDocModal')">Cancel</button>
+        <button type="button" id="confirmDeleteDocBtn" class="btn" style="background: #dc2626; color: white; font-weight: 700;" onclick="executeDeleteDocument()">Delete Document</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Navigation -->
   <header class="navbar">
     <div class="nav-container">
@@ -144,6 +242,7 @@
 
       <ul class="nav-tabs">
         <li><button class="nav-link active" onclick="showTab('dashboardTab', this)">📊 Dashboard</button></li>
+        <li><button class="nav-link" id="navDocsTabBtn" onclick="showTab('documentsTab', this)">📁 My 201 File</button></li>
         <li><button class="nav-link" onclick="showTab('formTab', this)">📝 My Information Sheet</button></li>
         <li><button class="nav-link" onclick="showTab('sifTab', this)">📄 Official 201-FILE PDF</button></li>
       </ul>
@@ -203,6 +302,27 @@
         </div>
       </div>
 
+      <!-- Document Checklist Overview Card -->
+      <div class="card" style="margin-bottom: 1.75rem; border-left: 4px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
+          <div>
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.25rem;">📁 201-File Document Checklist</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">
+              Track the submission status of your required student 201-file documents.
+            </p>
+          </div>
+          <button class="btn btn-primary" onclick="showTab('documentsTab', document.getElementById('navDocsTabBtn'))">
+            Manage Documents Folder →
+          </button>
+        </div>
+        <div class="doc-progress-container" style="margin-bottom: 0.75rem;">
+          <div id="dashDocProgressBar" class="doc-progress-bar" style="width: 0%;"></div>
+        </div>
+        <div id="dashDocChecklistSummary" style="display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap;">
+          <span>Loading document checklist...</span>
+        </div>
+      </div>
+
       <!-- Action Card -->
       <div class="card" id="sifStatusCard">
         <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Official 201-FILE Document Status</h3>
@@ -212,6 +332,53 @@
         </p>
         <div id="sifActionsContainer">
           <button class="btn btn-primary" onclick="showTab('formTab')">Fill Out 201-FILE Form Now →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1B. MY 201-FILE DOCUMENTS TAB -->
+    <div id="documentsTab" class="tab-pane" style="display: none;">
+      <div class="page-header">
+        <div>
+          <h2>My 201-File Documents</h2>
+          <p>Official student document repository. Upload required documents to your individual student folder.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <span class="badge badge-secondary" id="docYearLevelBadge">Year Level: 1st Year</span>
+          <span class="badge badge-primary" id="docSectionBadge">Section: —</span>
+          <button class="btn btn-secondary btn-sm" onclick="loadStudentDocuments()">↺ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Overall Checklist Progress Card -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem;">
+          <div>
+            <h3 style="margin-bottom: 0.25rem; font-size: 1.15rem;">Document Completion Checklist</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+              Ensure all required documents are uploaded for your individual 201-file cabinet.
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <span id="docProgressPercentage" style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">0%</span>
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block;" id="docProgressRatio">0 of 0 Completed</span>
+          </div>
+        </div>
+        <div class="doc-progress-container">
+          <div id="docProgressBar" class="doc-progress-bar" style="width: 0%;"></div>
+        </div>
+        <div style="display: flex; gap: 1.5rem; margin-top: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-muted);">
+          <span><strong id="docCountVerified" style="color: var(--success);">0</strong> Verified</span>
+          <span><strong id="docCountPending" style="color: #2563eb;">0</strong> Pending Review</span>
+          <span><strong id="docCountRejected" style="color: var(--danger);">0</strong> Action Required</span>
+          <span><strong id="docCountMissing" style="color: #64748b;">0</strong> Missing</span>
+        </div>
+      </div>
+
+      <!-- Categories Container -->
+      <div id="docCategoriesContainer">
+        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+          ⏳ Loading your 201-file documents...
         </div>
       </div>
     </div>
@@ -627,6 +794,28 @@
             </div>
           </div>
 
+          <!-- Section V: Required 201-File Document Uploads -->
+          <div class="form-section-banner" style="background: linear-gradient(135deg, #065f46, #047857);">
+            V. Required 201-File Document Uploads
+          </div>
+
+          <div class="edu-card" style="background: #f0fdf4; border: 1px solid #bbf7d0; margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap;">
+              <div style="font-size: 2.25rem;">📁</div>
+              <div style="flex: 1; min-width: 260px;">
+                <h4 style="margin: 0 0 0.35rem 0; color: #065f46; font-size: 1.05rem;">Student 201-File Document Repository</h4>
+                <p style="margin: 0; color: #166534; font-size: 0.875rem; line-height: 1.45;">
+                  Saving this form registers your <strong>Section</strong> and <strong>Student ID</strong>, creating your official 201 folder. 
+                  You can upload your required documents (Curriculum, Data Privacy, COM, Grades, and Seminar Certificates) under the 
+                  <strong>"📁 My 201 File"</strong> tab.
+                </p>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="showTab('documentsTab', document.getElementById('navDocsTabBtn'))" style="white-space: nowrap;">
+                Open 201-File Uploads →
+              </button>
+            </div>
+          </div>
+
           <!-- Submit Button -->
           <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
             <button type="submit" class="btn btn-primary" id="submitFormBtn"
@@ -656,6 +845,9 @@
     </div>
 
   </main>
+
+
+
 
   <script src="/js/app.js"></script>
   <script>
@@ -730,6 +922,7 @@
 
       await loadActiveSections();
       await loadStudentData();
+      await loadStudentDocuments();
 
       // Prevent authenticated page from being accessible via browser back after logout
       history.pushState(null, '', window.location.href);
@@ -1030,6 +1223,7 @@
 
         App.showToast('201-FILE PDF generated and filed successfully! ✓');
         await loadStudentData();
+        await loadStudentDocuments();
         submitBtn.disabled = false;
         submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
         
@@ -1041,6 +1235,538 @@
         App.showToast('Error: ' + (err.message || 'Network error during form submission.'), 'error');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
+      }
+    }
+
+    // =========================================================
+    // 201-FILE STUDENT DOCUMENT MODULE CLIENT LOGIC
+    // =========================================================
+    let studentDocsOverview = null;
+    let pendingDeleteDocId = null;
+
+    // Helper: Escape HTML to prevent XSS
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Load student 201 documents from backend
+    async function loadStudentDocuments() {
+      try {
+        const res = await fetch('/api/student/documents');
+        if (res.status === 401) {
+          window.location.href = '/index.html';
+          return;
+        }
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed to load documents (HTTP ${res.status})`);
+        }
+        const data = await res.json();
+        studentDocsOverview = data;
+
+        if (data.student) {
+          document.getElementById('docYearLevelBadge').textContent = `Year Level: ${data.student.yearLevel || '1st Year'}`;
+          document.getElementById('docSectionBadge').textContent = `Section: ${data.student.sectionName || 'Unassigned'}`;
+        }
+
+        renderDocumentCategories(data);
+        renderDashboardChecklist(data);
+      } catch (err) {
+        console.error('Error loading documents:', err);
+        document.getElementById('docCategoriesContainer').innerHTML = `
+          <div style="text-align: center; padding: 2.5rem 1rem; color: #dc2626; background: #fef2f2; border: 1px solid #fee2e2; border-radius: var(--radius-md); margin-top: 1rem;">
+            <p style="font-weight: 600; font-size: 1rem; margin-bottom: 0.5rem;">Failed to load documents</p>
+            <p style="font-size: 0.85rem; color: #991b1b; margin-bottom: 1rem;">${escapeHtml(err.message)}</p>
+            <button class="btn btn-secondary btn-sm" onclick="loadStudentDocuments()">↺ Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Render summary checklist on main dashboard
+    function renderDashboardChecklist(data) {
+      const summary = document.getElementById('dashDocChecklistSummary');
+      const dashBar = document.getElementById('dashDocProgressBar');
+
+      if (!data || !data.student || !data.checklist) {
+        if (dashBar) dashBar.style.width = '0%';
+        if (summary) {
+          summary.innerHTML = `
+            <span style="color: #b45309; font-weight: 600;">⚠️ Information Sheet Required: Please fill out your <strong>Personal Information Sheet</strong> to select your Section and activate your 201-file cabinet.</span>
+          `;
+        }
+        return;
+      }
+
+      const ch = data.checklist;
+      if (dashBar) dashBar.style.width = `${ch.percentage}%`;
+
+      if (summary) {
+        summary.innerHTML = `
+          <span><strong>${ch.percentage}%</strong> Overall Completion</span>
+          <span><strong style="color: var(--success);">${ch.completedCount}</strong> Verified</span>
+          <span><strong style="color: #2563eb;">${ch.pendingCount}</strong> Pending Review</span>
+          ${ch.rejectedCount > 0 ? `<span style="color: #dc2626; font-weight: 700;">⚠️ ${ch.rejectedCount} Action Required</span>` : ''}
+          <span><strong>${ch.missingCount}</strong> Missing</span>
+        `;
+      }
+    }
+
+    // Render full category cards on My Documents tab
+    function renderDocumentCategories(data) {
+      const container = document.getElementById('docCategoriesContainer');
+      if (!data || !data.student || !data.checklist || !data.categories || data.categories.length === 0) {
+        document.getElementById('docProgressBar').style.width = '0%';
+        document.getElementById('docProgressPercentage').textContent = '0%';
+        document.getElementById('docProgressRatio').textContent = 'Action Required';
+        document.getElementById('docCountVerified').textContent = '0';
+        document.getElementById('docCountPending').textContent = '0';
+        document.getElementById('docCountRejected').textContent = '0';
+        document.getElementById('docCountMissing').textContent = '0';
+
+        container.innerHTML = `
+          <div class="card" style="text-align: center; padding: 3rem 1.5rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-md); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="font-size: 3rem; margin-bottom: 0.75rem;">📋</div>
+            <h3 style="color: #92400e; margin-bottom: 0.5rem; font-size: 1.35rem;">Information Sheet Submission Required First</h3>
+            <p style="color: #78350f; max-width: 560px; margin: 0 auto 1.5rem auto; font-size: 0.95rem; line-height: 1.6;">
+              Before you can upload required 201-file documents, you must first complete and submit your 
+              <strong>Personal Information Sheet</strong>. This assigns your <strong>Section</strong> (e.g. 1A, 2A) and <strong>Student ID</strong>, 
+              which generates your individual student folder!
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="showTab('formTab')">
+                📝 Go to Personal Information Sheet →
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Update progress metrics
+      const ch = data.checklist;
+      document.getElementById('docProgressBar').style.width = `${ch.percentage}%`;
+      document.getElementById('docProgressPercentage').textContent = `${ch.percentage}%`;
+      document.getElementById('docProgressRatio').textContent = `${ch.completedCount} of ${ch.totalCategories} Categories Completed`;
+      document.getElementById('docCountVerified').textContent = ch.completedCount;
+      document.getElementById('docCountPending').textContent = ch.pendingCount;
+      document.getElementById('docCountRejected').textContent = ch.rejectedCount;
+      document.getElementById('docCountMissing').textContent = ch.missingCount;
+
+      let html = '';
+
+      data.categories.forEach(cat => {
+        // Locked seminar category for 1st & 2nd years
+        if (cat.seminarOnly && !cat.isEligible) {
+          html += `
+            <div class="seminar-locked-card">
+              <div class="seminar-locked-icon">🔒</div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+                  <h3 style="font-size: 1.1rem; margin: 0; color: #475569;">Certificates of Seminars</h3>
+                  <span class="badge badge-secondary" style="font-size: 0.75rem;">3rd & 4th Year Only</span>
+                </div>
+                <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
+                  This category is reserved for eligible 3rd-year and 4th-year students attending required collegiate seminars.
+                  Your current verified academic standing is <strong>${escapeHtml(data.student.yearLevel)}</strong>.
+                </p>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // Category card status class
+        let statusBadgeClass = 'badge-status-missing';
+        let statusBadgeText = 'Missing';
+        let statusCardClass = 'status-missing';
+
+        if (cat.status === 'verified') {
+          statusBadgeClass = 'badge-status-verified';
+          statusBadgeText = 'Verified ✓';
+          statusCardClass = 'status-verified';
+        } else if (cat.status === 'uploaded') {
+          statusBadgeClass = 'badge-status-uploaded';
+          statusBadgeText = 'Pending Review';
+          statusCardClass = 'status-uploaded';
+        } else if (cat.status === 'rejected') {
+          statusBadgeClass = 'badge-status-rejected';
+          statusBadgeText = 'Action Required ⚠️';
+          statusCardClass = 'status-rejected';
+        }
+
+        // Category icon mapping
+        let catIcon = '📁';
+        if (cat.key === 'pis') catIcon = '📝';
+        if (cat.key === 'curriculum') catIcon = '🎓';
+        if (cat.key === 'data_privacy') catIcon = '🛡️';
+        if (cat.key === 'com') catIcon = '📋';
+        if (cat.key === 'grades') catIcon = '📊';
+        if (cat.key === 'return_slips') catIcon = '✉️';
+        if (cat.key === 'seminar_certificates') catIcon = '📜';
+
+        // Check if any file has rejection remarks
+        const rejectedFileWithRemarks = (cat.files || []).find(f => f.admin_remarks && f.admin_remarks.trim());
+
+        html += `
+          <div class="doc-category-card ${statusCardClass}">
+            <div class="doc-category-header">
+              <div class="doc-category-title">
+                <div class="doc-category-icon">${catIcon}</div>
+                <div>
+                  <h3 style="font-size: 1.15rem; margin: 0; color: var(--secondary);">
+                    ${escapeHtml(cat.name)}
+                    ${cat.isMultiFile ? '<span style="font-size: 0.72rem; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 9999px; margin-left: 6px;">Multiple Files Allowed</span>' : ''}
+                  </h3>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                    ${escapeHtml(cat.description)}
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+                <span class="badge ${statusBadgeClass}">${statusBadgeText}</span>
+                ${renderCategoryUploadAction(cat)}
+              </div>
+            </div>
+
+            ${rejectedFileWithRemarks ? `
+              <div class="doc-remarks-box">
+                <span style="font-size: 1.1rem;">⚠️</span>
+                <div>
+                  <strong>Administrator Remarks:</strong> ${escapeHtml(rejectedFileWithRemarks.admin_remarks)}
+                  <div style="margin-top: 4px; font-size: 0.78rem;">Please upload a corrected document addressing the remarks above.</div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Uploaded Files Section -->
+            ${cat.files && cat.files.length > 0 ? `
+              <div class="doc-file-list">
+                ${cat.files.map(f => renderFileItem(f, cat)).join('')}
+              </div>
+            ` : `
+              <div style="background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: var(--radius-sm); padding: 0.85rem 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+                <span>No document uploaded yet for this category.</span>
+                <span style="font-size: 0.75rem;">Status: Missing</span>
+              </div>
+            `}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Helper: Render category action button
+    function renderCategoryUploadAction(cat) {
+      if (cat.key === 'pis') {
+        return `
+          <button class="btn btn-sm btn-secondary" onclick="showTab('formTab')">
+            📝 Edit Information Sheet
+          </button>
+        `;
+      }
+
+      if (cat.filesCount === 0) {
+        return `
+          <button class="btn btn-sm btn-primary" onclick="openUploadDocModal('${cat.key}', '${escapeHtml(cat.name)}', ${cat.isMultiFile}, false)">
+            📤 Upload File
+          </button>
+        `;
+      }
+
+      if (cat.isMultiFile) {
+        return `
+          <button class="btn btn-sm btn-primary" onclick="openUploadDocModal('${cat.key}', '${escapeHtml(cat.name)}', true, true)">
+            + Upload Another
+          </button>
+        `;
+      }
+
+      // Single file category
+      if (cat.status === 'verified') {
+        return `
+          <span style="font-size: 0.75rem; color: var(--success); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+            🔒 Verified & Locked
+          </span>
+        `;
+      }
+
+      return `
+        <button class="btn btn-sm btn-secondary" onclick="openUploadDocModal('${cat.key}', '${escapeHtml(cat.name)}', false, true)">
+          🔄 Replace File
+        </button>
+      `;
+    }
+
+    // Helper: Render individual file row
+    function renderFileItem(f, cat) {
+      const isPdf = f.original_filename.toLowerCase().endsWith('.pdf');
+      const icon = isPdf ? '📄' : '🖼️';
+
+      let fileStatusBadge = '<span class="badge badge-status-uploaded" style="font-size: 0.7rem;">Pending Review</span>';
+      if (f.upload_status === 'verified') {
+        fileStatusBadge = '<span class="badge badge-status-verified" style="font-size: 0.7rem;">Verified ✓</span>';
+      } else if (f.upload_status === 'rejected') {
+        fileStatusBadge = '<span class="badge badge-status-rejected" style="font-size: 0.7rem;">Rejected ✕</span>';
+      }
+
+      const formattedDate = f.uploaded_at ? new Date(f.uploaded_at).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      }) : '—';
+
+      const sizeStr = f.file_size ? App.formatBytes(f.file_size) : '';
+
+      // PIS File Specific Handling
+      if (f.isPis) {
+        return `
+          <div class="doc-file-item">
+            <div class="doc-file-info">
+              <span class="doc-file-icon">📄</span>
+              <div class="doc-file-details">
+                <span class="doc-file-name">${escapeHtml(f.original_filename)}</span>
+                <span class="doc-file-meta">Auto-Generated Official 201-FILE PDF &bull; ${formattedDate}</span>
+              </div>
+            </div>
+            <div class="doc-file-actions">
+              <span class="badge badge-status-verified" style="font-size: 0.7rem;">Official Form ✓</span>
+              <button class="btn btn-sm btn-secondary" onclick="showTab('sifTab')">👁 Preview</button>
+              <a href="/api/files/sif/${f.id}/download" class="btn btn-sm btn-primary">⬇ Download</a>
+            </div>
+          </div>
+        `;
+      }
+
+      const canDelete = f.upload_status !== 'verified';
+
+      return `
+        <div class="doc-file-item">
+          <div class="doc-file-info">
+            <span class="doc-file-icon">${icon}</span>
+            <div class="doc-file-details">
+              <span class="doc-file-name">${escapeHtml(f.original_filename)}</span>
+              <span class="doc-file-meta">${sizeStr ? sizeStr + ' &bull; ' : ''}Uploaded ${formattedDate}</span>
+            </div>
+          </div>
+          <div class="doc-file-actions">
+            ${fileStatusBadge}
+            <button class="btn btn-sm btn-secondary" onclick="previewDocument(${f.id}, '${escapeHtml(f.original_filename)}', '${f.mime_type || ''}')">
+              👁 View
+            </button>
+            <a href="/api/student/documents/${f.id}/download" class="btn btn-sm btn-secondary">
+              ⬇ Download
+            </a>
+            ${canDelete ? `
+              <button class="btn btn-sm btn-secondary" style="color: #dc2626;" onclick="promptDeleteDocument(${f.id}, '${escapeHtml(f.original_filename)}')" title="Delete file">
+                ✕
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Modal: Open Upload Modal
+    function openUploadDocModal(categoryKey, categoryName, isMultiFile, hasFile) {
+      document.getElementById('uploadCategoryKey').value = categoryKey;
+      document.getElementById('uploadModalTitle').textContent = `Upload ${categoryName}`;
+      document.getElementById('uploadCategoryDesc').textContent = `Select a document file to attach to the "${categoryName}" category in your 201 file.`;
+
+      const replaceNotice = document.getElementById('uploadReplaceNotice');
+      if (!isMultiFile && hasFile) {
+        replaceNotice.style.display = 'block';
+      } else {
+        replaceNotice.style.display = 'none';
+      }
+
+      // Reset file input and preview
+      document.getElementById('docFileInput').value = '';
+      document.getElementById('selectedFileInfo').style.display = 'none';
+      document.getElementById('uploadProgressBox').style.display = 'none';
+      document.getElementById('uploadSubmitBtn').disabled = true;
+      document.getElementById('uploadSubmitBtn').textContent = 'Upload Document';
+
+      App.openModal('uploadDocModal');
+    }
+
+    // Handle File Chooser Selection
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) {
+        document.getElementById('selectedFileInfo').style.display = 'none';
+        document.getElementById('uploadSubmitBtn').disabled = true;
+        return;
+      }
+
+      // Max size check: 10MB
+      if (file.size > 10 * 1024 * 1024) {
+        App.showToast('Selected file exceeds the maximum 10MB limit.', 'error');
+        e.target.value = '';
+        document.getElementById('selectedFileInfo').style.display = 'none';
+        document.getElementById('uploadSubmitBtn').disabled = true;
+        return;
+      }
+
+      const validExts = ['.pdf', '.jpg', '.jpeg', '.png'];
+      const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+      if (!validExts.includes(fileExt)) {
+        App.showToast('Unsupported file type. Please choose a PDF, JPG, or PNG file.', 'error');
+        e.target.value = '';
+        document.getElementById('selectedFileInfo').style.display = 'none';
+        document.getElementById('uploadSubmitBtn').disabled = true;
+        return;
+      }
+
+      document.getElementById('selectedFileName').textContent = file.name;
+      document.getElementById('selectedFileSize').textContent = App.formatBytes(file.size);
+      document.getElementById('selectedFileInfo').style.display = 'block';
+      document.getElementById('uploadSubmitBtn').disabled = false;
+    }
+
+    // Drag and Drop listeners
+    const dropzone = document.getElementById('docDropzone');
+    if (dropzone) {
+      ['dragenter', 'dragover'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.add('drag-over');
+        });
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.classList.remove('drag-over');
+        });
+      });
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+          document.getElementById('docFileInput').files = files;
+          handleFileSelect({ target: { files: files } });
+        }
+      });
+    }
+
+    // Submit Document Upload to Server
+    async function handleDocumentUploadSubmit(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('docFileInput');
+      const categoryKey = document.getElementById('uploadCategoryKey').value;
+      const submitBtn = document.getElementById('uploadSubmitBtn');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        App.showToast('Please select a file to upload.', 'warning');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('documentType', categoryKey);
+      formData.append('documentFile', file);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Uploading...';
+      document.getElementById('uploadProgressBox').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/student/documents/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || 'Failed to upload document.');
+        }
+
+        App.showToast(result.message || 'Document uploaded successfully! ✓');
+        App.closeModal('uploadDocModal');
+        await loadStudentDocuments();
+      } catch (err) {
+        console.error('Upload error:', err);
+        App.showToast(err.message || 'An error occurred during upload.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Upload Document';
+        document.getElementById('uploadProgressBox').style.display = 'none';
+      }
+    }
+
+    // Modal: Preview Document Inline
+    function previewDocument(docId, fileName, mimeType) {
+      document.getElementById('docViewerTitle').textContent = fileName;
+      document.getElementById('docViewerDownloadBtn').href = `/api/student/documents/${docId}/download`;
+
+      const iframe = document.getElementById('docViewerIframe');
+      const img = document.getElementById('docViewerImg');
+      const loading = document.getElementById('docViewerLoading');
+
+      iframe.style.display = 'none';
+      img.style.display = 'none';
+      loading.style.display = 'block';
+
+      const viewUrl = `/api/student/documents/${docId}/view`;
+
+      if (mimeType && mimeType.startsWith('image/')) {
+        img.src = viewUrl;
+        img.onload = () => {
+          loading.style.display = 'none';
+          img.style.display = 'block';
+        };
+        img.onerror = () => {
+          loading.textContent = 'Could not load image preview.';
+        };
+      } else {
+        iframe.src = viewUrl;
+        iframe.onload = () => {
+          loading.style.display = 'none';
+          iframe.style.display = 'block';
+        };
+      }
+
+      App.openModal('docViewerModal');
+    }
+
+    // Modal: Prompt Delete Confirmation
+    function promptDeleteDocument(docId, fileName) {
+      pendingDeleteDocId = docId;
+      document.getElementById('deleteDocNamePrompt').textContent = fileName;
+      App.openModal('confirmDeleteDocModal');
+    }
+
+    // Execute Delete Request
+    async function executeDeleteDocument() {
+      if (!pendingDeleteDocId) return;
+      const btn = document.getElementById('confirmDeleteDocBtn');
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+
+      try {
+        const res = await fetch(`/api/student/documents/${pendingDeleteDocId}`, {
+          method: 'DELETE'
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          throw new Error(result.error || 'Failed to delete document.');
+        }
+
+        App.showToast(result.message || 'Document removed successfully. ✓');
+        App.closeModal('confirmDeleteDocModal');
+        pendingDeleteDocId = null;
+        await loadStudentDocuments();
+      } catch (err) {
+        App.showToast(err.message || 'Failed to delete document.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Delete Document';
       }
     }
   </script>

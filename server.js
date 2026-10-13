@@ -8,6 +8,15 @@ const fs = require('fs');
 const { OAuth2Client } = require('google-auth-library');
 const { initDatabase, query, getOne, execute } = require('./config/database');
 const { ensureDefaultTemplate, generateStudentSIF, SIFS_DIR, TEMPLATES_DIR } = require('./services/pdfService');
+const {
+  DOCUMENT_CATEGORIES,
+  isEligibleForSeminars,
+  saveUploadedDocument,
+  ensureDocumentOnDisk,
+  getStudentDocumentOverview,
+  deleteDocument,
+  updateDocumentStatus
+} = require('./services/documentStorageService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -112,6 +121,12 @@ const uploadTemplate = multer({
       cb(new Error('Only PDF template files (.pdf) are permitted.'));
     }
   }
+});
+
+// Multer memory storage for Student 201-File Documents (Validates buffer & signatures in service)
+const uploadDocument = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
 });
 
 // ==========================================
@@ -336,10 +351,12 @@ app.get('/api/dashboard/stats', requireAuth, requireAdmin, async (req, res) => {
     const secRow = await getOne("SELECT COUNT(*) as count FROM sections WHERE status = 'active'");
     const stuRow = await getOne('SELECT COUNT(*) as count FROM students');
     const sifRow = await getOne('SELECT COUNT(*) as count FROM generated_files');
+    const docRow = await getOne('SELECT COUNT(*) as count FROM student_documents WHERE is_deleted = 0');
 
     const totalSections = secRow ? secRow.count : 0;
     const totalStudents = stuRow ? stuRow.count : 0;
     const totalSifs = sifRow ? sifRow.count : 0;
+    const totalDocuments = docRow ? docRow.count : 0;
 
     const sectionBreakdown = await query(`
       SELECT 
@@ -347,10 +364,12 @@ app.get('/api/dashboard/stats', requireAuth, requireAdmin, async (req, res) => {
         sec.name,
         sec.status,
         COUNT(DISTINCT s.id) as student_count,
-        COUNT(DISTINCT gf.id) as sif_count
+        COUNT(DISTINCT gf.id) as sif_count,
+        COUNT(DISTINCT sd.id) as doc_count
       FROM sections sec
       LEFT JOIN students s ON sec.id = s.section_id
       LEFT JOIN generated_files gf ON s.id = gf.student_id
+      LEFT JOIN student_documents sd ON s.id = sd.student_id AND sd.is_deleted = 0
       GROUP BY sec.id, sec.name, sec.status
       ORDER BY sec.name ASC
     `);
@@ -359,6 +378,7 @@ app.get('/api/dashboard/stats', requireAuth, requireAdmin, async (req, res) => {
       totalSections,
       totalStudents,
       totalSifs,
+      totalDocuments,
       sections: sectionBreakdown
     });
   } catch (err) {
@@ -667,12 +687,186 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
 });
 
 // ==========================================
+// 4B. STUDENT 201-FILE DOCUMENT MANAGEMENT (WITH IDOR PROTECTION)
+// ==========================================
+
+// Student: Get 201-File Document Checklist & Uploads (Strict Session Ownership)
+app.get('/api/student/documents', requireAuth, async (req, res) => {
+  const userId = req.session.user.id;
+  const userEmail = (req.session.user.email || '').toLowerCase();
+  try {
+    const student = await getOne(
+      `SELECT id, user_id, email, year_level FROM students WHERE user_id = ? OR LOWER(email) = ? LIMIT 1`,
+      [userId, userEmail]
+    );
+
+    if (!student) {
+      return res.json({
+        student: null,
+        checklist: null,
+        categories: []
+      });
+    }
+
+    const overview = await getStudentDocumentOverview(student.id);
+    res.json(overview);
+  } catch (err) {
+    console.error('Error fetching student documents:', err);
+    res.status(500).json({ error: 'Failed to load document records.' });
+  }
+});
+
+// Student: Upload Required 201-File Document (Strict Validation & IDOR Protection)
+app.post('/api/student/documents/upload', requireAuth, uploadDocument.single('documentFile'), async (req, res) => {
+  const userId = req.session.user.id;
+  const userEmail = (req.session.user.email || '').toLowerCase();
+  const { documentType } = req.body;
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'Please select a document file to upload.' });
+  }
+
+  if (!documentType || !DOCUMENT_CATEGORIES[documentType]) {
+    return res.status(400).json({ error: 'Invalid document category specified.' });
+  }
+
+  try {
+    const student = await getOne(
+      `SELECT id, user_id, email, year_level FROM students WHERE user_id = ? OR LOWER(email) = ? LIMIT 1`,
+      [userId, userEmail]
+    );
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student record not found. Please complete your registration first.' });
+    }
+
+    const savedDoc = await saveUploadedDocument({
+      studentId: student.id,
+      documentType,
+      originalFilename: req.file.originalname,
+      buffer: req.file.buffer,
+      declaredMimeType: req.file.mimetype,
+      uploadedBy: req.session.user.email
+    });
+
+    res.status(201).json({
+      message: `File "${savedDoc.originalFilename}" uploaded successfully.`,
+      document: savedDoc
+    });
+  } catch (err) {
+    console.error('Error uploading student document:', err);
+    res.status(400).json({ error: err.message || 'Failed to process document upload.' });
+  }
+});
+
+// Student & Admin: View Document Inline in Browser (Strict Ownership + Anti-Caching)
+app.get('/api/student/documents/:id/view', requireAuth, async (req, res) => {
+  const docId = req.params.id;
+  const userId = req.session.user.id;
+  const userEmail = (req.session.user.email || '').toLowerCase();
+  try {
+    const doc = await getOne(
+      `SELECT sd.*, s.user_id, s.email as student_email 
+       FROM student_documents sd 
+       JOIN students s ON sd.student_id = s.id 
+       WHERE sd.id = ? AND sd.is_deleted = 0`,
+      [docId]
+    );
+
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found.' });
+    }
+
+    // Critical Security Check: Student can ONLY view their own file; Admin can view all
+    if (req.session.user.role !== 'admin' && req.session.user.id !== doc.user_id && userEmail !== (doc.student_email || '').toLowerCase()) {
+      return res.status(403).json({ error: 'Access denied. You do not have permission to view this document.' });
+    }
+
+    const fullPath = await ensureDocumentOnDisk(doc);
+    if (!fullPath || !fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'Document file could not be retrieved from storage.' });
+    }
+
+    res.setHeader('Content-Type', doc.mime_type || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(doc.original_filename)}"`);
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    const readStream = fs.createReadStream(fullPath);
+    readStream.pipe(res);
+  } catch (err) {
+    console.error('Error viewing document:', err);
+    res.status(500).json({ error: 'Failed to display document.' });
+  }
+});
+
+// Student & Admin: Download Document File (Strict Ownership)
+app.get('/api/student/documents/:id/download', requireAuth, async (req, res) => {
+  const docId = req.params.id;
+  const userId = req.session.user.id;
+  const userEmail = (req.session.user.email || '').toLowerCase();
+  try {
+    const doc = await getOne(
+      `SELECT sd.*, s.user_id, s.email as student_email 
+       FROM student_documents sd 
+       JOIN students s ON sd.student_id = s.id 
+       WHERE sd.id = ? AND sd.is_deleted = 0`,
+      [docId]
+    );
+
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found.' });
+    }
+
+    if (req.session.user.role !== 'admin' && req.session.user.id !== doc.user_id && userEmail !== (doc.student_email || '').toLowerCase()) {
+      return res.status(403).json({ error: 'Access denied. You do not have permission to download this document.' });
+    }
+
+    const fullPath = await ensureDocumentOnDisk(doc);
+    if (!fullPath || !fs.existsSync(fullPath)) {
+      return res.status(404).json({ error: 'Document file could not be retrieved from storage.' });
+    }
+
+    res.setHeader('Content-Type', doc.mime_type || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(doc.original_filename)}"`);
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+    const readStream = fs.createReadStream(fullPath);
+    readStream.pipe(res);
+  } catch (err) {
+    console.error('Error downloading document:', err);
+    res.status(500).json({ error: 'Failed to download document.' });
+  }
+});
+
+// Student: Delete Own Uploaded Document (Forbidden if Verified by Admin)
+app.delete('/api/student/documents/:id', requireAuth, async (req, res) => {
+  const docId = req.params.id;
+  const userId = req.session.user.id;
+  const userEmail = (req.session.user.email || '').toLowerCase();
+  try {
+    const student = await getOne(
+      `SELECT id FROM students WHERE user_id = ? OR LOWER(email) = ? LIMIT 1`,
+      [userId, userEmail]
+    );
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    const result = await deleteDocument(docId, student.id, req.session.user.email, false);
+    res.json(result);
+  } catch (err) {
+    console.error('Error deleting student document:', err);
+    res.status(400).json({ error: err.message || 'Failed to remove document.' });
+  }
+});
+
+// ==========================================
 // 5. ADMIN STUDENT MANAGEMENT & SEARCH
 // ==========================================
 
-// Admin: Search & Filter Students
+// Admin: Search & Filter Students with Document Progress & Year Level
 app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
-  const { query: searchQuery, sectionId } = req.query;
+  const { query: searchQuery, sectionId, yearLevel, status: filterStatus } = req.query;
 
   let sql = `
     SELECT 
@@ -683,14 +877,20 @@ app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
       s.last_name,
       s.email,
       s.section_id,
+      s.year_level,
       sec.name as section_name,
       gf.id as generated_file_id,
       gf.file_name,
       gf.file_size,
-      gf.generated_at as sif_created_at
+      gf.generated_at as sif_created_at,
+      COUNT(DISTINCT sd.id) as total_documents,
+      SUM(CASE WHEN sd.upload_status = 'verified' THEN 1 ELSE 0 END) as verified_documents,
+      SUM(CASE WHEN sd.upload_status = 'uploaded' THEN 1 ELSE 0 END) as pending_documents,
+      SUM(CASE WHEN sd.upload_status = 'rejected' THEN 1 ELSE 0 END) as rejected_documents
     FROM students s
     LEFT JOIN sections sec ON s.section_id = sec.id
     LEFT JOIN generated_files gf ON s.id = gf.student_id
+    LEFT JOIN student_documents sd ON s.id = sd.student_id AND sd.is_deleted = 0
     WHERE 1=1
   `;
   const params = [];
@@ -706,13 +906,130 @@ app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
     params.push(sectionId);
   }
 
+  if (yearLevel && yearLevel !== 'all') {
+    sql += ` AND s.year_level = ?`;
+    params.push(yearLevel);
+  }
+
+  sql += ` GROUP BY s.id, sec.name, gf.id, gf.file_name, gf.file_size, gf.generated_at`;
+
+  // Status filtering in HAVING clause
+  if (filterStatus && filterStatus !== 'all') {
+    if (filterStatus === 'pending') {
+      sql += ` HAVING pending_documents > 0`;
+    } else if (filterStatus === 'rejected') {
+      sql += ` HAVING rejected_documents > 0`;
+    } else if (filterStatus === 'verified') {
+      sql += ` HAVING verified_documents > 0 AND pending_documents = 0 AND rejected_documents = 0`;
+    } else if (filterStatus === 'missing') {
+      sql += ` HAVING total_documents = 0 OR gf.id IS NULL`;
+    }
+  }
+
   sql += ` ORDER BY s.last_name ASC, s.first_name ASC`;
 
   try {
     const students = await query(sql, params);
     res.json(students);
   } catch (err) {
+    console.error('Error fetching students:', err);
     res.status(500).json({ error: 'Failed to search student records.' });
+  }
+});
+
+// ==========================================
+// 5B. ADMIN 201-FILE DOCUMENT REVIEW & VERIFICATION
+// ==========================================
+
+// Admin: Get Detailed 201-File Overview for Individual Student
+app.get('/api/admin/students/:id/documents', requireAuth, requireAdmin, async (req, res) => {
+  const studentId = req.params.id;
+  try {
+    const overview = await getStudentDocumentOverview(studentId);
+    if (!overview) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+    res.json(overview);
+  } catch (err) {
+    console.error('Error fetching student documents for admin:', err);
+    res.status(500).json({ error: 'Failed to load student documents.' });
+  }
+});
+
+// Admin: Verify, Reject, or Reset a Document Status (Audit-Logged)
+app.patch('/api/admin/documents/:id/status', requireAuth, requireAdmin, async (req, res) => {
+  const docId = req.params.id;
+  const { status, remarks } = req.body;
+  try {
+    const result = await updateDocumentStatus({
+      documentId: docId,
+      status,
+      remarks,
+      adminUser: req.session.user
+    });
+
+    res.json({
+      message: `Document status marked as ${status}.`,
+      result
+    });
+  } catch (err) {
+    console.error('Error updating document status:', err);
+    res.status(400).json({ error: err.message || 'Failed to update document status.' });
+  }
+});
+
+// Admin: Delete Document from Student Record (Audit-Logged)
+app.delete('/api/admin/documents/:id', requireAuth, requireAdmin, async (req, res) => {
+  const docId = req.params.id;
+  try {
+    const result = await deleteDocument(docId, null, req.session.user.email, true);
+    res.json(result);
+  } catch (err) {
+    console.error('Error deleting document as admin:', err);
+    res.status(400).json({ error: err.message || 'Failed to remove document.' });
+  }
+});
+
+// Admin: Set / Verify Official Student Year Level
+app.put('/api/admin/students/:id/year-level', requireAuth, requireAdmin, async (req, res) => {
+  const studentId = req.params.id;
+  const { yearLevel } = req.body;
+
+  if (!yearLevel || !['1st Year', '2nd Year', '3rd Year', '4th Year'].includes(yearLevel)) {
+    return res.status(400).json({ error: 'Invalid year level. Must be 1st Year, 2nd Year, 3rd Year, or 4th Year.' });
+  }
+
+  try {
+    const student = await getOne('SELECT * FROM students WHERE id = ?', [studentId]);
+    if (!student) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    await execute('UPDATE students SET year_level = ? WHERE id = ?', [yearLevel, studentId]);
+
+    // Record in Audit Log
+    try {
+      await execute(`
+        INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details)
+        VALUES (?, 'STUDENT_YEAR_LEVEL_UPDATE', 'students', ?, ?)
+      `, [
+        req.session.user.id,
+        studentId.toString(),
+        JSON.stringify({
+          studentName: `${student.first_name} ${student.last_name}`,
+          oldYearLevel: student.year_level,
+          newYearLevel: yearLevel
+        })
+      ]);
+    } catch (e) {}
+
+    res.json({
+      message: `Student year level updated to ${yearLevel} successfully.`,
+      yearLevel
+    });
+  } catch (err) {
+    console.error('Error updating student year level:', err);
+    res.status(500).json({ error: 'Failed to update year level.' });
   }
 });
 
