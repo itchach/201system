@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { getPool, getOne, query, execute } = require('../config/database');
+const { compressImageBuffer, isImageFile } = require('./imageCompressionService');
 
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 const DOCUMENTS_BASE_DIR = path.join(UPLOADS_DIR, '201_files');
@@ -223,26 +224,51 @@ async function saveUploadedDocument({
     }
   }
 
+  // 4b. Automatic Image Compression (JPEG / PNG)
+  // Preserves aspect ratio, EXIF orientation, and PNG transparency
+  let fileBufferToSave = buffer;
+  let fileMimeToSave = validation.mimeType;
+  let compressionInfo = null;
+
+  if (isImageFile(validation.mimeType, originalFilename)) {
+    try {
+      const compressionResult = await compressImageBuffer(buffer, validation.mimeType, originalFilename);
+      if (compressionResult && compressionResult.compressed && compressionResult.buffer) {
+        fileBufferToSave = compressionResult.buffer;
+        fileMimeToSave = compressionResult.mimeType || validation.mimeType;
+        compressionInfo = {
+          compressed: true,
+          originalSize: compressionResult.originalSize,
+          compressedSize: compressionResult.compressedSize,
+          savingsPercent: compressionResult.savingsPercent
+        };
+      }
+    } catch (compressErr) {
+      console.warn(`[STORAGE] Automatic compression failed for "${originalFilename}": ${compressErr.message}. Safely using original buffer.`);
+    }
+  }
+
   // 5. Generate Safe Storage Filename
   const safeRandom = crypto.randomBytes(6).toString('hex');
   const safeFilename = `${documentType}_std${studentId}_${Date.now()}_${safeRandom}${validation.ext}`;
   const { fullPath, storageKey } = getStoragePathForStudent(studentId, documentType, safeFilename);
 
-  // 6. Write file to disk cache
-  fs.writeFileSync(fullPath, buffer);
+  // 6. Write file to disk cache (using compressed buffer if image was compressed)
+  fs.writeFileSync(fullPath, fileBufferToSave);
 
-  // 7. Store document metadata in MySQL
+  // 7. Store document metadata in MySQL (including original vs compressed size)
   const insertResult = await execute(`
     INSERT INTO student_documents (
       student_id, document_type, original_filename, storage_key,
-      mime_type, file_size, upload_status, uploaded_at
-    ) VALUES (?, ?, ?, ?, ?, ?, 'uploaded', CURRENT_TIMESTAMP)
+      mime_type, file_size, original_file_size, upload_status, uploaded_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, 'uploaded', CURRENT_TIMESTAMP)
   `, [
     studentId,
     documentType,
     path.basename(originalFilename),
     storageKey,
-    validation.mimeType,
+    fileMimeToSave,
+    fileBufferToSave.length,
     buffer.length
   ]);
 
@@ -253,7 +279,7 @@ async function saveUploadedDocument({
     INSERT INTO student_document_files (document_id, file_data)
     VALUES (?, ?)
     ON DUPLICATE KEY UPDATE file_data = VALUES(file_data)
-  `, [documentId, buffer]);
+  `, [documentId, fileBufferToSave]);
 
   // 9. Record in Audit Log
   try {
@@ -267,7 +293,10 @@ async function saveUploadedDocument({
         studentId,
         documentType,
         originalFilename: path.basename(originalFilename),
-        fileSize: buffer.length,
+        fileSize: fileBufferToSave.length,
+        originalFileSize: buffer.length,
+        compressed: !!(compressionInfo && compressionInfo.compressed),
+        compressionSavings: compressionInfo ? `${compressionInfo.savingsPercent}%` : null,
         storageKey
       })
     ]);
@@ -281,8 +310,10 @@ async function saveUploadedDocument({
     documentType,
     originalFilename: path.basename(originalFilename),
     storageKey,
-    mimeType: validation.mimeType,
-    fileSize: buffer.length,
+    mimeType: fileMimeToSave,
+    fileSize: fileBufferToSave.length,
+    originalFileSize: buffer.length,
+    compressionInfo,
     uploadStatus: 'uploaded'
   };
 }
@@ -349,7 +380,7 @@ async function getStudentDocumentOverview(studentId) {
   const documents = await query(`
     SELECT 
       id, student_id, document_type, original_filename, storage_key,
-      mime_type, file_size, upload_status, uploaded_at, verified_by,
+      mime_type, file_size, original_file_size, upload_status, uploaded_at, verified_by,
       verified_at, admin_remarks
     FROM student_documents
     WHERE student_id = ? AND is_deleted = 0

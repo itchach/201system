@@ -150,7 +150,7 @@
             <input type="file" id="docFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" onchange="handleFileSelect(event)">
             <div class="dropzone-icon">📁</div>
             <div class="dropzone-text">Click to browse or drag &amp; drop</div>
-            <div class="dropzone-subtext">Accepted formats: PDF, JPG, PNG &bull; Max size: 10MB</div>
+            <div class="dropzone-subtext">Accepted formats: PDF, JPG, PNG &bull; Max size: 10MB &bull; <em>Images are auto-compressed</em></div>
           </div>
 
           <!-- Selected File Preview -->
@@ -866,11 +866,53 @@
 
       const reader = new FileReader();
       reader.onload = function (evt) {
-        currentPhotoBase64 = evt.target.result;
-        displayPhotoPreview(currentPhotoBase64);
-        App.showToast('1" x 1" Photo uploaded! ✓');
+        const rawDataUrl = evt.target.result;
+        compressClientPhoto(rawDataUrl, (optimizedDataUrl) => {
+          currentPhotoBase64 = optimizedDataUrl || rawDataUrl;
+          displayPhotoPreview(currentPhotoBase64);
+          App.showToast('1" x 1" Photo uploaded & optimized! ✓');
+        });
       };
       reader.readAsDataURL(file);
+    }
+
+    function compressClientPhoto(dataUrl, callback) {
+      try {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement('canvas');
+          const maxDim = 600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const isPng = dataUrl.startsWith('data:image/png');
+          const mimeType = isPng ? 'image/png' : 'image/jpeg';
+          const quality = isPng ? 0.92 : 0.82;
+          const compressed = canvas.toDataURL(mimeType, quality);
+          callback(compressed);
+        };
+        img.onerror = function () {
+          callback(dataUrl);
+        };
+        img.src = dataUrl;
+      } catch (err) {
+        callback(dataUrl);
+      }
     }
 
     function displayPhotoPreview(dataUrl) {
@@ -1521,7 +1563,11 @@
         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
       }) : '—';
 
-      const sizeStr = f.file_size ? App.formatBytes(f.file_size) : '';
+      let sizeStr = f.file_size ? App.formatBytes(f.file_size) : '';
+      if (f.file_size && f.original_file_size && f.original_file_size > f.file_size) {
+        const savings = Math.round(((f.original_file_size - f.file_size) / f.original_file_size) * 100);
+        sizeStr += ` <span style="background: #ecfdf5; color: #047857; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #a7f3d0; font-weight: 600;">${savings}% compressed</span>`;
+      }
 
       // PIS File Specific Handling
       if (f.isPis) {
@@ -1624,7 +1670,8 @@
       }
 
       document.getElementById('selectedFileName').textContent = file.name;
-      document.getElementById('selectedFileSize').textContent = App.formatBytes(file.size);
+      const isImg = ['.jpg', '.jpeg', '.png'].includes(fileExt);
+      document.getElementById('selectedFileSize').textContent = App.formatBytes(file.size) + (isImg ? ' (automatic compression enabled)' : '');
       document.getElementById('selectedFileInfo').style.display = 'block';
       document.getElementById('uploadSubmitBtn').disabled = false;
     }

@@ -17,6 +17,7 @@ const {
   deleteDocument,
   updateDocumentStatus
 } = require('./services/documentStorageService');
+const { compressBase64Image } = require('./services/imageCompressionService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -597,6 +598,22 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Please provide Student ID, First Name, Last Name, and select a Section.' });
   }
 
+  // Automatic compression for student 1" x 1" photo if attached as Base64 Data URL
+  if (formData.photoBase64 && typeof formData.photoBase64 === 'string' && formData.photoBase64.startsWith('data:image')) {
+    try {
+      const photoCompression = await compressBase64Image(formData.photoBase64, {
+        maxDimension: 600,
+        quality: 85
+      });
+      if (photoCompression.compressed && photoCompression.dataUrl) {
+        formData.photoBase64 = photoCompression.dataUrl;
+        console.log(`[SUBMIT] Student 1x1 photo compressed (${photoCompression.savingsPercent}% reduction).`);
+      }
+    } catch (photoErr) {
+      console.warn('[SUBMIT] Student photo compression error (safe bypass):', photoErr.message);
+    }
+  }
+
   try {
     // 1. Verify that Section exists and is ACTIVE
     const section = await getOne('SELECT * FROM sections WHERE id = ? AND status = ?', [sectionId, 'active']);
@@ -749,8 +766,13 @@ app.post('/api/student/documents/upload', requireAuth, uploadDocument.single('do
       uploadedBy: req.session.user.email
     });
 
+    const isCompressed = savedDoc.compressionInfo && savedDoc.compressionInfo.compressed;
+    const successMsg = isCompressed
+      ? `File "${savedDoc.originalFilename}" compressed (${savedDoc.compressionInfo.savingsPercent}% reduction) and uploaded successfully.`
+      : `File "${savedDoc.originalFilename}" uploaded successfully.`;
+
     res.status(201).json({
-      message: `File "${savedDoc.originalFilename}" uploaded successfully.`,
+      message: successMsg,
       document: savedDoc
     });
   } catch (err) {

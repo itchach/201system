@@ -253,6 +253,17 @@ async function initDatabase() {
     ) ENGINE=InnoDB;
   `);
 
+  // Ensure original_file_size column exists on student_documents table
+  try {
+    const [origCheck] = await p.query("SHOW COLUMNS FROM student_documents LIKE 'original_file_size'");
+    if (origCheck.length === 0) {
+      await p.query("ALTER TABLE student_documents ADD COLUMN original_file_size INT NULL AFTER file_size");
+      console.log('✓ Added original_file_size column to student_documents table.');
+    }
+  } catch (err) {
+    console.warn('Note on original_file_size column check:', err.message);
+  }
+
   // 12. Student Document Files Table (Persistent Storage for Ephemeral Render Environments)
   await p.query(`
     CREATE TABLE IF NOT EXISTS student_document_files (
