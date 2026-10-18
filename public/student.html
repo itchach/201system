@@ -959,6 +959,7 @@
         return;
       }
 
+      window.currentUser = auth.user;
       document.getElementById('navUserName').textContent = auth.user.name;
       document.getElementById('navUserEmail').textContent = auth.user.email;
 
@@ -1035,22 +1036,33 @@
       document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
       document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
 
-      document.getElementById(tabId).style.display = 'block';
-      if (btn) btn.classList.add('active');
+      const pane = document.getElementById(tabId);
+      if (pane) pane.style.display = 'block';
+
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const matchingLink = document.querySelector(`.nav-tabs button[onclick*="${tabId}"]`);
+        if (matchingLink) matchingLink.classList.add('active');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function loadActiveSections() {
       try {
         const res = await fetch('/api/sections/active');
+        if (!res.ok) throw new Error('Failed to load active sections');
         const sections = await res.json();
         const select = document.getElementById('sectionId');
         select.innerHTML = '<option value="">-- Select Active Section --</option>';
-        sections.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s.id;
-          opt.textContent = `Section ${s.name}`;
-          select.appendChild(opt);
-        });
+        if (Array.isArray(sections)) {
+          sections.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = `Section ${s.name}`;
+            select.appendChild(opt);
+          });
+        }
       } catch (err) {
         console.error('Error loading sections:', err);
       }
@@ -1163,6 +1175,27 @@
           if (currentStudent.first_name) document.getElementById('firstName').value = currentStudent.first_name;
           if (currentStudent.last_name) document.getElementById('lastName').value = currentStudent.last_name;
           if (currentStudent.section_id) document.getElementById('sectionId').value = currentStudent.section_id;
+          if (currentStudent.year_level) document.getElementById('yearLevel').value = currentStudent.year_level;
+        } else if (window.currentUser && window.currentUser.name) {
+          // Pre-populate name fields for new student from user account
+          const fullName = window.currentUser.name.trim();
+          const firstInput = document.getElementById('firstName');
+          const lastInput = document.getElementById('lastName');
+          if (!firstInput.value && !lastInput.value) {
+            if (fullName.includes(',')) {
+              const parts = fullName.split(',');
+              lastInput.value = parts[0].trim();
+              firstInput.value = parts.slice(1).join(',').trim();
+            } else {
+              const parts = fullName.split(/\s+/);
+              if (parts.length > 1) {
+                lastInput.value = parts.pop();
+                firstInput.value = parts.join(' ');
+              } else {
+                firstInput.value = fullName;
+              }
+            }
+          }
         }
       } catch (err) {
         console.error('Error fetching student details:', err);
@@ -1503,7 +1536,7 @@
       if (cat.key === 'pis') {
         return `
           <button class="btn btn-sm btn-secondary" onclick="showTab('formTab')">
-                <button class="btn btn-secondary" onclick="showTab('formTab')">Edit Information</button>
+            Edit Information
           </button>
         `;
       }
@@ -1740,7 +1773,6 @@
       }
     }
 
-                <button class="btn btn-secondary" onclick="showTab('sifTab')">Preview Document</button>
     function previewDocument(docId, fileName, mimeType) {
       document.getElementById('docViewerTitle').textContent = fileName;
       document.getElementById('docViewerDownloadBtn').href = `/api/student/documents/${docId}/download`;

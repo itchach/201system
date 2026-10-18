@@ -551,8 +551,8 @@ app.get('/api/student/info', requireAuth, async (req, res) => {
       LEFT JOIN sections sec ON s.section_id = sec.id
       LEFT JOIN generated_files gf ON s.id = gf.student_id
       WHERE s.user_id = ? OR LOWER(s.email) = ?
-      ORDER BY gf.id DESC LIMIT 1
-    `, [userId, userEmail]);
+      ORDER BY (s.user_id = ?) DESC, gf.id DESC LIMIT 1
+    `, [userId, userEmail, userId]);
 
     if (!student) {
       return res.json({ student: null, formData: null });
@@ -623,9 +623,11 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
 
     // 2. Check or create/update student record
     let student = await getOne(
-      'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ?',
-      [userId, user.email.toLowerCase()]
+      'SELECT * FROM students WHERE user_id = ? OR LOWER(email) = ? ORDER BY (user_id = ?) DESC LIMIT 1',
+      [userId, user.email.toLowerCase(), userId]
     );
+
+    const yearLevel = (formData.yearLevel || '1st Year').trim();
 
     if (student) {
       // Check if studentId is being changed to one that already exists on another student
@@ -636,9 +638,9 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
 
       await execute(`
         UPDATE students
-        SET user_id = ?, student_id = ?, first_name = ?, middle_name = ?, last_name = ?, section_id = ?, email = ?
+        SET user_id = ?, student_id = ?, first_name = ?, middle_name = ?, last_name = ?, section_id = ?, email = ?, year_level = ?
         WHERE id = ?
-      `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, student.id]);
+      `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, yearLevel, student.id]);
       student = await getOne('SELECT * FROM students WHERE id = ?', [student.id]);
     } else {
       // Check if an unlinked student record exists with this student_id
@@ -649,15 +651,15 @@ app.post('/api/student/submit', requireAuth, async (req, res) => {
         }
         await execute(`
           UPDATE students
-          SET user_id = ?, first_name = ?, middle_name = ?, last_name = ?, section_id = ?, email = ?
+          SET user_id = ?, first_name = ?, middle_name = ?, last_name = ?, section_id = ?, email = ?, year_level = ?
           WHERE id = ?
-        `, [userId, firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, existingByStudentId.id]);
+        `, [userId, firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, yearLevel, existingByStudentId.id]);
         student = await getOne('SELECT * FROM students WHERE id = ?', [existingByStudentId.id]);
       } else {
         const insert = await execute(`
-          INSERT INTO students (user_id, student_id, first_name, middle_name, last_name, section_id, email)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email]);
+          INSERT INTO students (user_id, student_id, first_name, middle_name, last_name, section_id, email, year_level)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [userId, studentId.trim(), firstName.trim(), (middleName || '').trim(), lastName.trim(), section.id, user.email, yearLevel]);
         student = await getOne('SELECT * FROM students WHERE id = ?', [insert.insertId]);
       }
     }
