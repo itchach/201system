@@ -886,9 +886,191 @@ app.delete('/api/student/documents/:id', requireAuth, async (req, res) => {
 // 5. ADMIN STUDENT MANAGEMENT & SEARCH
 // ==========================================
 
-// Admin: Search & Filter Students with Document Progress & Year Level
+// Admin: Get all 201-Document Categories definitions
+app.get('/api/admin/documents/categories', requireAuth, requireAdmin, (req, res) => {
+  const allCats = [
+    {
+      key: 'pis',
+      name: 'Personal Information Sheet (PIS)',
+      description: 'Official College of Computer Studies Student Personal Information Sheet (BSIT).',
+      isMultiFile: false,
+      seminarOnly: false
+    },
+    ...Object.values(DOCUMENT_CATEGORIES)
+  ];
+  res.json(allCats);
+});
+
+// Admin: Get Document Compliance Summary across students
+app.get('/api/admin/documents/compliance-summary', requireAuth, requireAdmin, async (req, res) => {
+  const { documentType, sectionId, yearLevel, query: searchQuery } = req.query;
+
+  if (!documentType || documentType === 'all') {
+    return res.status(400).json({ error: 'Specific documentType is required for compliance summary.' });
+  }
+
+  const categoryDef = documentType === 'pis' ? {
+    key: 'pis',
+    name: 'Personal Information Sheet (PIS)',
+    description: 'Official College of Computer Studies Student Personal Information Sheet (BSIT).',
+    isMultiFile: false,
+    seminarOnly: false
+  } : DOCUMENT_CATEGORIES[documentType];
+
+  if (!categoryDef) {
+    return res.status(400).json({ error: `Invalid document category: "${documentType}".` });
+  }
+
+  try {
+    let sql = `
+      SELECT 
+        s.id,
+        s.year_level,
+        sec.name as section_name,
+        gf.id as generated_file_id
+    `;
+
+    const params = [];
+
+    if (documentType === 'pis') {
+      sql += `, (CASE WHEN gf.id IS NOT NULL THEN 1 ELSE 0 END) as spec_doc_count,
+              (CASE WHEN gf.id IS NOT NULL THEN 1 ELSE 0 END) as spec_doc_verified_count,
+              0 as spec_doc_pending_count,
+              0 as spec_doc_rejected_count
+             FROM students s
+             LEFT JOIN sections sec ON s.section_id = sec.id
+             LEFT JOIN generated_files gf ON s.id = gf.student_id
+             WHERE 1=1`;
+    } else {
+      sql += `, COUNT(DISTINCT sd_spec.id) as spec_doc_count,
+              SUM(CASE WHEN sd_spec.upload_status = 'verified' THEN 1 ELSE 0 END) as spec_doc_verified_count,
+              SUM(CASE WHEN sd_spec.upload_status = 'uploaded' THEN 1 ELSE 0 END) as spec_doc_pending_count,
+              SUM(CASE WHEN sd_spec.upload_status = 'rejected' THEN 1 ELSE 0 END) as spec_doc_rejected_count
+             FROM students s
+             LEFT JOIN sections sec ON s.section_id = sec.id
+             LEFT JOIN generated_files gf ON s.id = gf.student_id
+             LEFT JOIN student_documents sd_spec ON s.id = sd_spec.student_id AND sd_spec.document_type = ? AND sd_spec.is_deleted = 0
+             WHERE 1=1`;
+      params.push(documentType);
+    }
+
+    if (searchQuery && searchQuery.trim()) {
+      const q = `%${searchQuery.trim()}%`;
+      sql += ` AND (s.student_id LIKE ? OR s.first_name LIKE ? OR s.last_name LIKE ? OR s.email LIKE ? OR CONCAT(s.first_name, ' ', s.last_name) LIKE ?)`;
+      params.push(q, q, q, q, q);
+    }
+
+    if (sectionId && sectionId !== 'all') {
+      sql += ` AND s.section_id = ?`;
+      params.push(sectionId);
+    }
+
+    if (yearLevel && yearLevel !== 'all') {
+      sql += ` AND s.year_level = ?`;
+      params.push(yearLevel);
+    }
+
+    sql += ` GROUP BY s.id, s.year_level, sec.name, gf.id`;
+
+    const rows = await query(sql, params);
+
+    let totalStudents = rows.length;
+    let passedCount = 0;
+    let notPassedCount = 0;
+    let verifiedCount = 0;
+    let pendingCount = 0;
+    let rejectedCount = 0;
+    let missingCount = 0;
+    let notApplicableCount = 0;
+
+    for (const r of rows) {
+      const isEligible = categoryDef.seminarOnly ? isEligibleForSeminars(r.year_level, r.section_name) : true;
+      if (categoryDef.seminarOnly && !isEligible) {
+        notApplicableCount++;
+        continue;
+      }
+
+      if (documentType === 'pis') {
+        if (r.generated_file_id) {
+          passedCount++;
+          verifiedCount++;
+        } else {
+          notPassedCount++;
+          missingCount++;
+        }
+      } else {
+        const vCnt = Number(r.spec_doc_verified_count || 0);
+        const pCnt = Number(r.spec_doc_pending_count || 0);
+        const rCnt = Number(r.spec_doc_rejected_count || 0);
+        const totalCnt = Number(r.spec_doc_count || 0);
+
+        if (totalCnt === 0) {
+          notPassedCount++;
+          missingCount++;
+        } else if (rCnt > 0 && vCnt === 0 && pCnt === 0) {
+          notPassedCount++;
+          rejectedCount++;
+        } else if (pCnt > 0) {
+          passedCount++;
+          pendingCount++;
+        } else if (vCnt > 0) {
+          passedCount++;
+          verifiedCount++;
+        } else {
+          passedCount++;
+          pendingCount++;
+        }
+      }
+    }
+
+    const applicableStudents = totalStudents - notApplicableCount;
+    const passedPercentage = applicableStudents > 0 ? Math.round((passedCount / applicableStudents) * 100) : 0;
+    const notPassedPercentage = applicableStudents > 0 ? Math.round((notPassedCount / applicableStudents) * 100) : 0;
+
+    res.json({
+      documentType,
+      documentName: categoryDef.name,
+      description: categoryDef.description,
+      isMultiFile: categoryDef.isMultiFile,
+      seminarOnly: categoryDef.seminarOnly,
+      totalStudents,
+      applicableStudents,
+      passedCount,
+      passedPercentage,
+      notPassedCount,
+      notPassedPercentage,
+      verifiedCount,
+      pendingCount,
+      rejectedCount,
+      missingCount,
+      notApplicableCount
+    });
+  } catch (err) {
+    console.error('Error calculating document compliance summary:', err);
+    res.status(500).json({ error: 'Failed to generate document compliance summary.' });
+  }
+});
+
+// Admin: Search & Filter Students with Document Progress & Specific Document Pass/Fail Status
 app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
-  const { query: searchQuery, sectionId, yearLevel, status: filterStatus } = req.query;
+  const { query: searchQuery, sectionId, yearLevel, status: filterStatus, documentType, docStatus } = req.query;
+
+  const isSpecificDoc = documentType && documentType !== 'all';
+  const effectiveStatus = (docStatus && docStatus !== 'all') ? docStatus : (filterStatus && filterStatus !== 'all' ? filterStatus : 'all');
+
+  let categoryDef = null;
+  if (isSpecificDoc) {
+    if (documentType === 'pis') {
+      categoryDef = {
+        key: 'pis',
+        name: 'Personal Information Sheet (PIS)',
+        isMultiFile: false,
+        seminarOnly: false
+      };
+    } else if (DOCUMENT_CATEGORIES[documentType]) {
+      categoryDef = DOCUMENT_CATEGORIES[documentType];
+    }
+  }
 
   let sql = `
     SELECT 
@@ -909,13 +1091,51 @@ app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
       SUM(CASE WHEN sd.upload_status = 'verified' THEN 1 ELSE 0 END) as verified_documents,
       SUM(CASE WHEN sd.upload_status = 'uploaded' THEN 1 ELSE 0 END) as pending_documents,
       SUM(CASE WHEN sd.upload_status = 'rejected' THEN 1 ELSE 0 END) as rejected_documents
+  `;
+
+  const params = [];
+
+  if (isSpecificDoc) {
+    if (documentType === 'pis') {
+      sql += `,
+        (CASE WHEN gf.id IS NOT NULL THEN 1 ELSE 0 END) as spec_doc_count,
+        (CASE WHEN gf.id IS NOT NULL THEN 1 ELSE 0 END) as spec_doc_verified_count,
+        0 as spec_doc_pending_count,
+        0 as spec_doc_rejected_count,
+        gf.id as spec_doc_latest_id,
+        gf.file_name as spec_doc_latest_filename,
+        gf.generated_at as spec_doc_latest_date,
+        'verified' as spec_doc_latest_status,
+        '' as spec_doc_latest_remarks
+      `;
+    } else {
+      sql += `,
+        COUNT(DISTINCT sd_spec.id) as spec_doc_count,
+        SUM(CASE WHEN sd_spec.upload_status = 'verified' THEN 1 ELSE 0 END) as spec_doc_verified_count,
+        SUM(CASE WHEN sd_spec.upload_status = 'uploaded' THEN 1 ELSE 0 END) as spec_doc_pending_count,
+        SUM(CASE WHEN sd_spec.upload_status = 'rejected' THEN 1 ELSE 0 END) as spec_doc_rejected_count,
+        MAX(sd_spec.id) as spec_doc_latest_id,
+        MAX(sd_spec.uploaded_at) as spec_doc_latest_date,
+        SUBSTRING_INDEX(GROUP_CONCAT(sd_spec.original_filename ORDER BY sd_spec.id DESC SEPARATOR '|||'), '|||', 1) as spec_doc_latest_filename,
+        SUBSTRING_INDEX(GROUP_CONCAT(sd_spec.upload_status ORDER BY sd_spec.id DESC SEPARATOR '|||'), '|||', 1) as spec_doc_latest_status,
+        SUBSTRING_INDEX(GROUP_CONCAT(COALESCE(sd_spec.admin_remarks, '') ORDER BY sd_spec.id DESC SEPARATOR '|||'), '|||', 1) as spec_doc_latest_remarks
+      `;
+    }
+  }
+
+  sql += `
     FROM students s
     LEFT JOIN sections sec ON s.section_id = sec.id
     LEFT JOIN generated_files gf ON s.id = gf.student_id
     LEFT JOIN student_documents sd ON s.id = sd.student_id AND sd.is_deleted = 0
-    WHERE 1=1
   `;
-  const params = [];
+
+  if (isSpecificDoc && documentType !== 'pis') {
+    sql += ` LEFT JOIN student_documents sd_spec ON s.id = sd_spec.student_id AND sd_spec.document_type = ? AND sd_spec.is_deleted = 0`;
+    params.push(documentType);
+  }
+
+  sql += ` WHERE 1=1`;
 
   if (searchQuery && searchQuery.trim()) {
     const q = `%${searchQuery.trim()}%`;
@@ -936,15 +1156,40 @@ app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
   sql += ` GROUP BY s.id, sec.name, gf.id, gf.file_name, gf.file_size, gf.generated_at`;
 
   // Status filtering in HAVING clause
-  if (filterStatus && filterStatus !== 'all') {
-    if (filterStatus === 'pending') {
-      sql += ` HAVING pending_documents > 0`;
-    } else if (filterStatus === 'rejected') {
-      sql += ` HAVING rejected_documents > 0`;
-    } else if (filterStatus === 'verified') {
-      sql += ` HAVING verified_documents > 0 AND pending_documents = 0 AND rejected_documents = 0`;
-    } else if (filterStatus === 'missing') {
-      sql += ` HAVING total_documents = 0 OR gf.id IS NULL`;
+  if (effectiveStatus && effectiveStatus !== 'all') {
+    if (isSpecificDoc) {
+      if (documentType === 'pis') {
+        if (effectiveStatus === 'passed' || effectiveStatus === 'verified') {
+          sql += ` HAVING gf.id IS NOT NULL`;
+        } else if (effectiveStatus === 'not_passed' || effectiveStatus === 'missing') {
+          sql += ` HAVING gf.id IS NULL`;
+        } else if (effectiveStatus === 'pending' || effectiveStatus === 'rejected') {
+          sql += ` HAVING 1 = 0`;
+        }
+      } else {
+        if (effectiveStatus === 'passed') {
+          sql += ` HAVING (spec_doc_verified_count > 0 OR spec_doc_pending_count > 0)`;
+        } else if (effectiveStatus === 'not_passed' || effectiveStatus === 'missing') {
+          sql += ` HAVING (spec_doc_count = 0 OR (spec_doc_verified_count = 0 AND spec_doc_pending_count = 0))`;
+        } else if (effectiveStatus === 'verified') {
+          sql += ` HAVING (spec_doc_verified_count > 0 AND spec_doc_pending_count = 0)`;
+        } else if (effectiveStatus === 'pending') {
+          sql += ` HAVING (spec_doc_pending_count > 0)`;
+        } else if (effectiveStatus === 'rejected') {
+          sql += ` HAVING (spec_doc_rejected_count > 0 AND spec_doc_verified_count = 0 AND spec_doc_pending_count = 0)`;
+        }
+      }
+    } else {
+      // General multi-document status filter
+      if (effectiveStatus === 'pending') {
+        sql += ` HAVING pending_documents > 0`;
+      } else if (effectiveStatus === 'rejected') {
+        sql += ` HAVING rejected_documents > 0`;
+      } else if (effectiveStatus === 'verified') {
+        sql += ` HAVING verified_documents > 0 AND pending_documents = 0 AND rejected_documents = 0`;
+      } else if (effectiveStatus === 'missing') {
+        sql += ` HAVING total_documents = 0 OR gf.id IS NULL`;
+      }
     }
   }
 
@@ -952,6 +1197,67 @@ app.get('/api/students', requireAuth, requireAdmin, async (req, res) => {
 
   try {
     const students = await query(sql, params);
+
+    // If specific document requested, enrich each row with formatted status and eligibility
+    if (isSpecificDoc && categoryDef) {
+      students.forEach(s => {
+        const isEligible = categoryDef.seminarOnly ? isEligibleForSeminars(s.year_level, s.section_name) : true;
+        let docStatus = 'missing';
+        let docStatusLabel = 'Not Passed (Missing)';
+        let isPassed = false;
+
+        if (categoryDef.seminarOnly && !isEligible) {
+          docStatus = 'not_applicable';
+          docStatusLabel = 'Not Required (1st/2nd Yr)';
+          isPassed = false;
+        } else if (documentType === 'pis') {
+          if (s.generated_file_id) {
+            docStatus = 'verified';
+            docStatusLabel = 'Passed (Generated)';
+            isPassed = true;
+          } else {
+            docStatus = 'missing';
+            docStatusLabel = 'Not Passed (Missing)';
+            isPassed = false;
+          }
+        } else {
+          const vCnt = Number(s.spec_doc_verified_count || 0);
+          const pCnt = Number(s.spec_doc_pending_count || 0);
+          const rCnt = Number(s.spec_doc_rejected_count || 0);
+          const totalCnt = Number(s.spec_doc_count || 0);
+
+          if (totalCnt === 0) {
+            docStatus = 'missing';
+            docStatusLabel = 'Not Passed (Missing)';
+            isPassed = false;
+          } else if (rCnt > 0 && vCnt === 0 && pCnt === 0) {
+            docStatus = 'rejected';
+            docStatusLabel = 'Requires Resubmission';
+            isPassed = false;
+          } else if (pCnt > 0) {
+            docStatus = 'uploaded';
+            docStatusLabel = 'Passed (Pending Review)';
+            isPassed = true;
+          } else if (vCnt > 0) {
+            docStatus = 'verified';
+            docStatusLabel = 'Passed (Verified)';
+            isPassed = true;
+          } else {
+            docStatus = 'uploaded';
+            docStatusLabel = 'Passed (Submitted)';
+            isPassed = true;
+          }
+        }
+
+        s.spec_doc_key = documentType;
+        s.spec_doc_name = categoryDef.name;
+        s.spec_doc_status = docStatus;
+        s.spec_doc_status_label = docStatusLabel;
+        s.spec_doc_is_passed = isPassed;
+        s.spec_doc_is_eligible = isEligible;
+      });
+    }
+
     res.json(students);
   } catch (err) {
     console.error('Error fetching students:', err);

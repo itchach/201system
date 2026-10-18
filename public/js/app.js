@@ -78,12 +78,10 @@ const App = {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     
-    let icon = '✓';
-    if (type === 'error') icon = '✕';
-    if (type === 'warning') icon = '⚠';
+    let icon = '';
 
     toast.innerHTML = `
-      <span style="font-weight: bold; font-size: 1.1rem;">${icon}</span>
+      
       <div style="flex: 1; font-size: 0.875rem;">${message}</div>
     `;
 

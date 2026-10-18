@@ -113,6 +113,137 @@
       font-size: 0.8rem;
       margin-right: 0.6rem;
     }
+
+    /* Document Search & Compliance Filter Enhancements */
+    .filter-panel-card {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.85rem;
+      align-items: flex-end;
+    }
+    .filter-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--secondary-muted);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .compliance-banner {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #cbd5e1;
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 1.15rem 1.35rem;
+      margin-top: 1.15rem;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .compliance-banner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .compliance-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .compliance-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-full);
+      padding: 0.38rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .compliance-chip:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .compliance-chip.active {
+      background: var(--secondary);
+      color: #ffffff;
+      border-color: var(--secondary);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+    }
+    .compliance-chip.chip-passed {
+      border-color: #86efac;
+      background: #f0fdf4;
+      color: #166534;
+    }
+    .compliance-chip.chip-passed:hover {
+      background: #dcfce7;
+      border-color: #4ade80;
+    }
+    .compliance-chip.chip-passed.active {
+      background: #16a34a;
+      color: #ffffff;
+      border-color: #15803d;
+    }
+    .compliance-chip.chip-not-passed {
+      border-color: #fca5a5;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+    .compliance-chip.chip-not-passed:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+    .compliance-chip.chip-not-passed.active {
+      background: #dc2626;
+      color: #ffffff;
+      border-color: #b91c1c;
+    }
+    .compliance-chip.chip-pending {
+      border-color: #93c5fd;
+      background: #eff6ff;
+      color: #1e40af;
+    }
+    .compliance-chip.chip-pending:hover {
+      background: #dbeafe;
+      border-color: #60a5fa;
+    }
+    .compliance-chip.chip-pending.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    .compliance-chip .chip-count {
+      padding: 0.1rem 0.48rem;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 800;
+      background: rgba(0,0,0,0.06);
+    }
+    .compliance-chip.active .chip-count {
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
+    }
   </style>
 </head>
 
@@ -138,11 +269,11 @@
       </a>
 
       <ul class="nav-tabs">
-        <li><button class="nav-link active" onclick="showTab('dashboardTab', this)">📊 Dashboard</button></li>
-        <li><button class="nav-link" onclick="showTab('sectionsTab', this)">📁 Dynamic Sections</button></li>
-        <li><button class="nav-link" onclick="showTab('studentsTab', this)">🎓 Students & 201-FILEs</button></li>
-        <li><button class="nav-link" onclick="showTab('templateTab', this)">📑 201-FILE Template</button></li>
-        <li><button class="nav-link" onclick="showTab('usersTab', this)">👥 Authorized Users</button></li>
+        <li><button class="nav-link active" onclick="showTab('dashboardTab', this)">Dashboard</button></li>
+        <li><button class="nav-link" onclick="showTab('sectionsTab', this)">Dynamic Sections</button></li>
+        <li><button class="nav-link" onclick="showTab('studentsTab', this)">Students & 201-FILEs</button></li>
+        <li><button class="nav-link" onclick="showTab('templateTab', this)">201-FILE Template</button></li>
+        <li><button class="nav-link" onclick="showTab('usersTab', this)">Authorized Users</button></li>
       </ul>
 
       <div class="user-profile">
@@ -179,7 +310,9 @@
       <!-- KPI Grid -->
       <div class="kpi-grid">
         <div class="kpi-card emerald">
-          <div class="kpi-icon green">📁</div>
+          <div class="kpi-icon green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          </div>
           <div class="kpi-info">
             <h3 id="statTotalSections">0</h3>
             <p>Active Sections</p>
@@ -187,7 +320,9 @@
         </div>
 
         <div class="kpi-card blue">
-          <div class="kpi-icon blue">🎓</div>
+          <div class="kpi-icon blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+          </div>
           <div class="kpi-info">
             <h3 id="statTotalStudents">0</h3>
             <p>Enrolled Students</p>
@@ -195,7 +330,9 @@
         </div>
 
         <div class="kpi-card amber">
-          <div class="kpi-icon amber">📄</div>
+          <div class="kpi-icon amber">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </div>
           <div class="kpi-info">
             <h3 id="statTotalSifs">0</h3>
             <p>Generated 201-FILE PDFs</p>
@@ -203,7 +340,9 @@
         </div>
 
         <div class="kpi-card" style="border-top: 3px solid #8b5cf6;">
-          <div class="kpi-icon" style="background: #f5f3ff; color: #8b5cf6;">📑</div>
+          <div class="kpi-icon" style="background: #f5f3ff; color: #8b5cf6;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
           <div class="kpi-info">
             <h3 id="statTotalDocs">0</h3>
             <p>Uploaded 201 Documents</p>
@@ -309,22 +448,44 @@
       </div>
 
       <!-- Search & Filters -->
-      <div class="card" style="padding: 1.25rem;">
-        <div class="search-box">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍 </span>
-            <input type="text" id="studentSearchInput" class="form-control"
-              placeholder="Search by Student ID, Name, or School Email..." oninput="debouncedSearchStudents()">
+      <div class="filter-panel-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.15rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.2rem;">
+              Search Students & 201-Document Compliance
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+              Filter students by section, year level, or select a specific document to see who has <strong>passed</strong> (submitted/verified) or <strong>not passed</strong> (missing).
+            </p>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="resetStudentFilters()" title="Reset all filters to default">
+            Reset Filters
+          </button>
+        </div>
+
+        <div class="filter-grid">
+          <!-- 1. Search Query -->
+          <div class="filter-group" style="grid-column: span 2; min-width: 250px;">
+            <label for="studentSearchInput">Student Search</label>
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="studentSearchInput" class="form-control"
+                placeholder="Search by Student ID, Name, or School Email..." oninput="debouncedSearchStudents()">
+            </div>
           </div>
 
-          <div style="min-width: 160px;">
-            <select id="studentSectionFilter" class="form-control" onchange="loadStudents()">
+          <!-- 2. Section Filter -->
+          <div class="filter-group">
+            <label for="studentSectionFilter">Section</label>
+            <select id="studentSectionFilter" class="form-control" onchange="onStudentFilterChange()">
               <option value="all">All Sections</option>
             </select>
           </div>
 
-          <div style="min-width: 150px;">
-            <select id="studentYearLevelFilter" class="form-control" onchange="loadStudents()">
+          <!-- 3. Year Level Filter -->
+          <div class="filter-group">
+            <label for="studentYearLevelFilter">Year Level</label>
+            <select id="studentYearLevelFilter" class="form-control" onchange="onStudentFilterChange()">
               <option value="all">All Year Levels</option>
               <option value="1st Year">1st Year</option>
               <option value="2nd Year">2nd Year</option>
@@ -333,22 +494,110 @@
             </select>
           </div>
 
-          <div style="min-width: 170px;">
-            <select id="studentDocStatusFilter" class="form-control" onchange="loadStudents()">
-              <option value="all">All Document Statuses</option>
-              <option value="pending">Pending Review ⏳</option>
-              <option value="rejected">Action Required ⚠️</option>
-              <option value="verified">Verified Documents ✓</option>
-              <option value="missing">Missing Documents</option>
+          <!-- 4. Specific Document Filter -->
+          <div class="filter-group" style="min-width: 230px;">
+            <label for="studentDocumentFilter">Target 201 Document</label>
+            <select id="studentDocumentFilter" class="form-control" onchange="onDocumentCategoryChange()" style="font-weight: 600; color: #047857; border-color: #6ee7b7; background-color: #f0fdf4;">
+              <option value="all">All Documents (General Status)</option>
+              <option value="curriculum">Curriculum</option>
+              <option value="com">Certificate of Matriculation (COM)</option>
+              <option value="data_privacy">Data Privacy Consent</option>
+              <option value="grades">Copy of Grades</option>
+              <option value="return_slips">Return Slips</option>
+              <option value="seminar_certificates">Certificates of Seminars (3rd/4th Yr)</option>
+              <option value="pis">Personal Information Sheet (PIS)</option>
             </select>
           </div>
 
-          <button class="btn btn-primary" onclick="loadStudents()">Filter</button>
+          <!-- 5. Status Filter -->
+          <div class="filter-group" style="min-width: 200px;">
+            <label for="studentDocStatusFilter">Submission / Pass Status</label>
+            <select id="studentDocStatusFilter" class="form-control" onchange="onStudentFilterChange()">
+              <option value="all">All Document Statuses</option>
+              <option value="pending">Pending Review</option>
+              <option value="rejected">Action Required</option>
+              <option value="verified">Verified Documents</option>
+              <option value="missing">Missing Documents</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Document Compliance Overview & Quick Filter Chips Banner -->
+        <div id="docComplianceBanner" class="compliance-banner" style="display: none;">
+          <div class="compliance-banner-header">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <strong id="bannerDocTitle" style="font-size: 1.05rem; color: var(--secondary);">Document Compliance Report</strong>
+                <span id="bannerDocBadge" class="badge badge-primary">Single File</span>
+              </div>
+              <div id="bannerDocDesc" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 3px;">
+                Checking submission status across students
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-sm btn-secondary" onclick="copyMissingStudentList()" id="btnCopyMissingList" title="Copy list of students who have not passed this document">
+                Copy Missing List (<span id="btnCopyMissingCount">0</span>)
+              </button>
+              <button class="btn btn-sm btn-secondary" onclick="exportStudentsCsv()" title="Export filtered student list to CSV">
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Metric Filter Chips -->
+          <div class="compliance-chips-row">
+            <span style="font-size: 0.74rem; font-weight: 700; color: var(--secondary-muted); text-transform: uppercase; margin-right: 0.2rem;">Filter by:</span>
+            
+            <div class="compliance-chip active" id="chipAll" onclick="setComplianceStatusFilter('all')">
+              <span>All Enrolled</span>
+              <span class="chip-count" id="chipCountTotal">0</span>
+            </div>
+
+            <div class="compliance-chip chip-passed" id="chipPassed" onclick="setComplianceStatusFilter('passed')">
+              <span>Passed / Submitted</span>
+              <span class="chip-count" id="chipCountPassed">0 (0%)</span>
+            </div>
+
+            <div class="compliance-chip chip-not-passed" id="chipNotPassed" onclick="setComplianceStatusFilter('not_passed')">
+              <span>Not Passed (Missing)</span>
+              <span class="chip-count" id="chipCountNotPassed">0 (0%)</span>
+            </div>
+
+            <div class="compliance-chip" id="chipVerified" onclick="setComplianceStatusFilter('verified')" style="border-color: #a7f3d0; color: #047857;">
+              <span>Verified</span>
+              <span class="chip-count" id="chipCountVerified">0</span>
+            </div>
+
+            <div class="compliance-chip chip-pending" id="chipPending" onclick="setComplianceStatusFilter('pending')">
+              <span>Pending Review</span>
+              <span class="chip-count" id="chipCountPending">0</span>
+            </div>
+
+            <div class="compliance-chip" id="chipRejected" onclick="setComplianceStatusFilter('rejected')" style="border-color: #fecaca; color: #b91c1c;">
+              <span>Requires Resubmission</span>
+              <span class="chip-count" id="chipCountRejected">0</span>
+            </div>
+
+            <div class="compliance-chip" id="chipNotApplicable" style="display: none; border-color: #e2e8f0; color: #64748b; cursor: default;">
+              <span>Not Required</span>
+              <span class="chip-count" id="chipCountNotApp">0</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Students Table -->
       <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.15rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="font-size: 0.88rem; color: var(--text-muted);">
+            Showing <strong id="studentResultCount" style="color: var(--secondary);">0</strong> student records
+          </div>
+          <div id="tableActiveFilterBadge" style="display: none;">
+            <span class="badge badge-success" id="tableFilterDescription">Filter active</span>
+          </div>
+        </div>
+
         <div class="table-container">
           <table>
             <thead>
@@ -358,15 +607,14 @@
                 <th>Year Level</th>
                 <th>School Email</th>
                 <th>Section</th>
-                <th>201-File Documents</th>
+                <th id="studentTableDocHeader">201-File Documents</th>
                 <th>SIF Form PDF</th>
                 <th style="text-align: right;">Actions</th>
               </tr>
             </thead>
             <tbody id="studentsTableTbody">
               <tr>
-                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student
-                  records...</td>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading student records...</td>
               </tr>
             </tbody>
           </table>
@@ -381,7 +629,7 @@
           <h2>201-FILE PDF Template & Field Mapping</h2>
           <p>Configure official school PDF templates and mapping rules for automated generation.</p>
         </div>
-        <button class="btn btn-primary" onclick="openUploadTemplateModal()">📤 Upload Custom Template</button>
+        <button class="btn btn-primary" onclick="openUploadTemplateModal()">Upload Custom Template</button>
       </div>
 
       <div class="card">
@@ -392,7 +640,7 @@
         </p>
 
         <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
-          <a href="/api/files/template/1/view" target="_blank" class="btn btn-secondary">👁 View Blank Template PDF</a>
+          <a href="/api/files/template/1/view" target="_blank" class="btn btn-secondary">View Blank Template PDF</a>
           <span class="badge badge-success">High-Fidelity Official Form Stamping Active</span>
         </div>
 
@@ -598,7 +846,7 @@
           </div>
           <div
             style="background: var(--bg-subtle); padding: 0.85rem; border-radius: var(--radius-sm); font-size: 0.825rem; color: var(--text-muted);">
-            ℹ <strong>Requirement Rule:</strong> Moving a student updates the student record. Historical PDFs remain
+            <strong>Requirement Rule:</strong> Moving a student updates the student record. Historical PDFs remain
             unchanged unless explicitly regenerated.
           </div>
         </div>
@@ -616,7 +864,8 @@
       <div class="modal-header"
         style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
         <h3 id="sectionViewTitle" style="margin: 0;">Section Students</h3>
-        <div style="display: flex; gap: 0.6rem; align-items: center;">
+        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-sm btn-secondary" onclick="jumpToSectionCompliance(currentViewingSectionId)" title="Filter 201-Document compliance for this section">Check 201 Compliance</button>
           <button id="modalRegenAllBtn" class="btn btn-sm btn-primary" onclick="handleSectionModalRegenAll()"
             title="Re-generate all 201-FILE PDFs in this section"> Re-Generate All in Section</button>
           <button class="modal-close" onclick="App.closeModal('sectionViewModal')">&times;</button>
@@ -684,7 +933,7 @@
               <input type="password" id="newAdminPasscode" class="form-control"
                 placeholder="Enter Admin Security Passcode">
               <span onclick="togglePasscodeVisibility('newAdminPasscode', this)"
-                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Show</span>
             </div>
           </div>
         </div>
@@ -700,7 +949,7 @@
   <div class="modal-backdrop" id="elevateAdminModal">
     <div class="modal-dialog">
       <div class="modal-header" style="background: linear-gradient(135deg, #7f1d1d, #991b1b); color: white;">
-        <h3 style="color: white; margin: 0;">🛡️ Grant Administrator Privileges</h3>
+        <h3 style="color: white; margin: 0;">Grant Administrator Privileges</h3>
         <button class="modal-close" style="color: white;" onclick="App.closeModal('elevateAdminModal')">&times;</button>
       </div>
       <form onsubmit="handleConfirmElevateAdmin(event)">
@@ -712,7 +961,7 @@
           <div
             style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem;">
             <p style="font-size: 0.8rem; color: #991b1b; margin: 0;">
-              ⚠️ <strong>Security Notice:</strong> Administrators have full access to view, edit, regenerate, and delete
+              <strong>Security Notice:</strong> Administrators have full access to view, edit, regenerate, and delete
               all student 201-FILEs and section records.
             </p>
           </div>
@@ -722,7 +971,7 @@
               <input type="password" id="elevatePasscode" class="form-control"
                 placeholder="Enter Admin Security Passcode" required>
               <span onclick="togglePasscodeVisibility('elevatePasscode', this)"
-                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none;">👁️</span>
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Show</span>
             </div>
           </div>
         </div>
@@ -781,7 +1030,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a id="previewDownloadBtn" href="#" class="btn btn-primary">⬇ Download PDF</a>
+        <a id="previewDownloadBtn" href="#" class="btn btn-primary">Download PDF</a>
         <button type="button" class="btn btn-secondary" onclick="App.closeModal('sifPreviewModal')">Close</button>
       </div>
     </div>
@@ -848,7 +1097,7 @@
   <div class="modal-backdrop" id="adminRejectDocModal">
     <div class="modal-dialog" style="max-width: 480px;">
       <div class="modal-header">
-        <h3 style="color: #b91c1c;">✕ Reject Document & Request Resubmission</h3>
+        <h3 style="color: #b91c1c;">Reject Document & Request Resubmission</h3>
         <button class="modal-close" onclick="App.closeModal('adminRejectDocModal')">&times;</button>
       </div>
       <form onsubmit="handleConfirmRejectDocument(event)">
@@ -879,7 +1128,7 @@
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h3 id="adminDocPreviewTitle" style="font-size: 1.15rem; margin: 0;">Document Preview</h3>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <a id="adminDocPreviewDownloadBtn" href="#" class="btn btn-sm btn-primary" download>⬇ Download</a>
+          <a id="adminDocPreviewDownloadBtn" href="#" class="btn btn-sm btn-primary" download>Download</a>
           <button class="modal-close" onclick="App.closeModal('adminDocPreviewModal')">&times;</button>
         </div>
       </div>
@@ -960,7 +1209,7 @@
       modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,0.7);z-index:9999;align-items:center;justify-content:center;';
       modal.innerHTML = `
         <div style="background:#fff;border-radius:12px;padding:2rem 2.25rem;max-width:420px;width:90%;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.2);">
-          <div style="font-size:2.5rem;margin-bottom:0.75rem">⏰</div>
+          <div style="font-size:1.5rem;margin-bottom:0.75rem;font-weight:700;color:var(--text-muted);">PENDING</div>
           <h3 style="color:#b45309;font-size:1.25rem;margin-bottom:0.5rem">Session Expiring Soon</h3>
           <p style="color:#64748b;margin-bottom:1rem;font-size:0.9rem">Your admin session will expire due to inactivity. You will be signed out in:</p>
           <span id="adminInactivityCountdown" style="font-size:2.5rem;font-weight:800;color:#dc2626;display:block;margin-bottom:1rem">60</span>
@@ -1053,7 +1302,7 @@
           <tr>
             <td>
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div class="folder-icon-wrapper">📁</div>
+                <div class="folder-icon-wrapper"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
                 <div>
                   <strong style="font-size: 1.05rem;">Section ${s.name}</strong>
                   <div style="font-size: 0.75rem; color: var(--text-muted);">Cabinet Folder</div>
@@ -1063,7 +1312,7 @@
             <td><strong>${s.student_count}</strong> student${s.student_count === 1 ? '' : 's'}</td>
             <td>
               <span class="badge ${s.sif_count > 0 ? 'badge-success' : 'badge-secondary'}">
-                📄 ${s.sif_count} SIF PDF${s.sif_count === 1 ? '' : 's'}
+                ${s.sif_count} SIF PDF${s.sif_count === 1 ? '' : 's'}
               </span>
             </td>
             <td>
@@ -1128,7 +1377,7 @@
         <div class="section-folder-card" onclick="viewSectionFiles(${s.id}, '${s.name}')">
           <div class="section-folder-header">
             <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <span style="font-size: 1.5rem;">📁</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
               <h3>${s.name}</h3>
             </div>
             <span class="badge ${s.status === 'active' ? 'badge-success' : 'badge-secondary'}">
@@ -1147,7 +1396,7 @@
           </div>
           <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
             <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); regenerateSectionAll(${s.id}, '${s.name}')" title="Re-Generate all student PDFs in Section ${s.name}"> Re-Gen All</button>
-            <span style="font-size: 0.78rem; color: var(--primary); font-weight: 700;">Open Folder ➔</span>
+            <span style="font-size: 0.78rem; color: var(--primary); font-weight: 700;">Open Folder &rarr;</span>
           </div>
         </div>
       `).join('');
@@ -1208,7 +1457,7 @@
           return;
         }
 
-        App.showToast(`Section ${name.toUpperCase()} created successfully! ✓`);
+        App.showToast(`Section ${name.toUpperCase()} created successfully!`);
         App.closeModal('addSectionModal');
         await loadSections();
         await loadDashboard();
@@ -1241,7 +1490,7 @@
           return;
         }
 
-        App.showToast('Section name updated! ✓');
+        App.showToast('Section name updated!');
         App.closeModal('editSectionModal');
         await loadSections();
         await loadDashboard();
@@ -1264,7 +1513,7 @@
           return;
         }
 
-        App.showToast(`Section marked as ${newStatus} ✓`);
+        App.showToast(`Section marked as ${newStatus}`);
         await loadSections();
         await loadDashboard();
       } catch (err) {
@@ -1274,6 +1523,18 @@
 
     let currentViewingSectionId = null;
     let currentViewingSectionName = '';
+
+    function jumpToSectionCompliance(sectionId) {
+      if (!sectionId) return;
+      App.closeModal('sectionViewModal');
+      const studentTabBtn = document.querySelector('.nav-tabs li:nth-child(3) .nav-link') || null;
+      showTab('studentsTab', studentTabBtn);
+      const secSelect = document.getElementById('studentSectionFilter');
+      if (secSelect) {
+        secSelect.value = sectionId;
+        onStudentFilterChange();
+      }
+    }
 
     async function viewSectionFiles(sectionId, sectionName) {
       currentViewingSectionId = sectionId;
@@ -1294,16 +1555,16 @@
               <td><strong>${s.student_id || '—'}</strong></td>
               <td>${s.last_name}, ${s.first_name}</td>
               <td>
-                ${s.generated_file_id ? `<span class="badge badge-success">📄 ${s.file_name}</span>` : '<span class="badge badge-warning">Pending Generation</span>'}
+                ${s.generated_file_id ? `<span class="badge badge-success">${s.file_name}</span>` : '<span class="badge badge-warning">Pending Generation</span>'}
               </td>
               <td style="text-align: right; white-space: nowrap;">
                 ${s.generated_file_id ? `
-                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview PDF">👁 View</button>
-                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download PDF">⬇ Download</a>
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview PDF">View</button>
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download PDF">Download</a>
                   <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Re-Generate SIF PDF on server"> Re-Gen</button>
-                  <button class="btn btn-sm btn-danger" onclick="removeSectionFile(${s.generated_file_id}, '${s.file_name}', ${sectionId}, '${sectionName}')" title="Remove File">🗑 Remove</button>
+                  <button class="btn btn-sm btn-danger" onclick="removeSectionFile(${s.generated_file_id}, '${s.file_name}', ${sectionId}, '${sectionName}')" title="Remove File">Remove</button>
                 ` : `
-                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Generate Official 201-FILE PDF from database">💾 Generate PDF</button>
+                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id}, ${sectionId}, '${sectionName}')" title="Generate Official 201-FILE PDF from database">Generate PDF</button>
                 `}
               </td>
             </tr>
@@ -1325,7 +1586,7 @@
       if (!confirm(`Re-generate ALL student 201-FILE PDFs in Section ${sectionName}? This will recompile all submitted student information into fresh official PDFs on the server.`)) return;
 
       try {
-        App.showToast(`Re-generating all 201-FILEs for Section ${sectionName}... ⏳`);
+        App.showToast(`Re-generating all 201-FILEs for Section ${sectionName}...`);
         const res = await fetch(`/api/sections/${sectionId}/regenerate-all`, { method: 'POST' });
         const data = await res.json();
 
@@ -1334,7 +1595,7 @@
           return;
         }
 
-        App.showToast(data.message || `All 201-FILEs for Section ${sectionName} regenerated! ✓`);
+        App.showToast(data.message || `All 201-FILEs for Section ${sectionName} regenerated!`);
         if (currentViewingSectionId === sectionId) {
           await viewSectionFiles(sectionId, sectionName);
         }
@@ -1358,7 +1619,7 @@
           return;
         }
 
-        App.showToast(data.message || 'File removed successfully! ✓');
+        App.showToast(data.message || 'File removed successfully!');
         await viewSectionFiles(sectionId, sectionName);
         await loadSections();
         await loadDashboard();
@@ -1380,7 +1641,7 @@
           return;
         }
 
-        App.showToast(data.message || 'File removed successfully! ✓');
+        App.showToast(data.message || 'File removed successfully!');
         await loadStudents();
         await loadSections();
         await loadDashboard();
@@ -1401,7 +1662,7 @@
           return;
         }
 
-        App.showToast(data.message || 'Student record deleted! ✓');
+        App.showToast(data.message || 'Student record deleted!');
         await loadStudents();
         await loadSections();
         await loadDashboard();
@@ -1410,42 +1671,388 @@
       }
     }
 
-    // ================= STUDENTS DIRECTORY =================
+    // ================= STUDENTS DIRECTORY & DOCUMENT COMPLIANCE =================
+    let currentStudentsList = [];
+    let currentComplianceSummary = null;
+
     function debouncedSearchStudents() {
       clearTimeout(searchDebounceTimeout);
       searchDebounceTimeout = setTimeout(() => {
+        const docType = document.getElementById('studentDocumentFilter').value;
+        if (docType !== 'all') {
+          fetchComplianceSummary();
+        }
         loadStudents();
       }, 300);
+    }
+
+    function onDocumentCategoryChange() {
+      const docType = document.getElementById('studentDocumentFilter').value;
+      const statusSelect = document.getElementById('studentDocStatusFilter');
+      const banner = document.getElementById('docComplianceBanner');
+      const tableHeader = document.getElementById('studentTableDocHeader');
+
+      if (docType === 'all') {
+        banner.style.display = 'none';
+        tableHeader.textContent = '201-File Documents';
+        statusSelect.innerHTML = `
+          <option value="all">All Document Statuses</option>
+          <option value="pending">Pending Review</option>
+          <option value="rejected">Action Required</option>
+          <option value="verified">Verified Documents</option>
+          <option value="missing">Missing Documents</option>
+        `;
+        statusSelect.value = 'all';
+      } else {
+        banner.style.display = 'block';
+        const docText = document.getElementById('studentDocumentFilter').options[document.getElementById('studentDocumentFilter').selectedIndex].text;
+        const cleanDocName = docText.replace(/^[^\w]+/, '').trim();
+        tableHeader.textContent = `Status: ${cleanDocName}`;
+        statusSelect.innerHTML = `
+          <option value="all">All Students (Any Status)</option>
+          <option value="passed">Passed / Submitted (All)</option>
+          <option value="not_passed">Not Passed / Missing</option>
+          <option value="verified">Passed & Verified</option>
+          <option value="pending">Pending Review</option>
+          <option value="rejected">Requires Resubmission</option>
+        `;
+        statusSelect.value = 'all';
+        fetchComplianceSummary();
+      }
+
+      updateActiveChipHighlight();
+      loadStudents();
+    }
+
+    function onStudentFilterChange() {
+      const docType = document.getElementById('studentDocumentFilter').value;
+      if (docType !== 'all') {
+        fetchComplianceSummary();
+      }
+      updateActiveChipHighlight();
+      loadStudents();
+    }
+
+    function setComplianceStatusFilter(status) {
+      const statusSelect = document.getElementById('studentDocStatusFilter');
+      statusSelect.value = status;
+      updateActiveChipHighlight();
+      loadStudents();
+    }
+
+    function updateActiveChipHighlight() {
+      const docType = document.getElementById('studentDocumentFilter').value;
+      if (docType === 'all') return;
+      const status = document.getElementById('studentDocStatusFilter').value;
+
+      const chipMap = {
+        'all': 'chipAll',
+        'passed': 'chipPassed',
+        'not_passed': 'chipNotPassed',
+        'missing': 'chipNotPassed',
+        'verified': 'chipVerified',
+        'pending': 'chipPending',
+        'rejected': 'chipRejected'
+      };
+
+      document.querySelectorAll('.compliance-chips-row .compliance-chip').forEach(el => el.classList.remove('active'));
+      const targetId = chipMap[status] || 'chipAll';
+      const targetChip = document.getElementById(targetId);
+      if (targetChip) targetChip.classList.add('active');
+    }
+
+    async function fetchComplianceSummary() {
+      const docType = document.getElementById('studentDocumentFilter').value;
+      if (!docType || docType === 'all') return;
+
+      const sectionId = document.getElementById('studentSectionFilter').value;
+      const yearLevel = (document.getElementById('studentYearLevelFilter') || {}).value || 'all';
+      const query = document.getElementById('studentSearchInput').value;
+
+      try {
+        const url = `/api/admin/documents/compliance-summary?documentType=${encodeURIComponent(docType)}&sectionId=${encodeURIComponent(sectionId)}&yearLevel=${encodeURIComponent(yearLevel)}&query=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const summary = await res.json();
+        currentComplianceSummary = summary;
+        renderComplianceBanner(summary);
+      } catch (err) {
+        console.error('Error fetching compliance summary:', err);
+      }
+    }
+
+    function renderComplianceBanner(summary) {
+      if (!summary) return;
+
+      
+      document.getElementById('bannerDocTitle').textContent = summary.documentName;
+      document.getElementById('bannerDocDesc').textContent = summary.description;
+
+      const badge = document.getElementById('bannerDocBadge');
+      if (summary.seminarOnly) {
+        badge.className = 'badge badge-warning';
+        badge.textContent = '3rd & 4th Year Only';
+      } else if (summary.isMultiFile) {
+        badge.className = 'badge badge-primary';
+        badge.textContent = 'Multi-File Upload';
+      } else {
+        badge.className = 'badge badge-secondary';
+        badge.textContent = 'Single Required Document';
+      }
+
+      document.getElementById('chipCountTotal').textContent = summary.totalStudents;
+      document.getElementById('chipCountPassed').textContent = `${summary.passedCount} (${summary.passedPercentage}%)`;
+      document.getElementById('chipCountNotPassed').textContent = `${summary.notPassedCount} (${summary.notPassedPercentage}%)`;
+      document.getElementById('chipCountVerified').textContent = summary.verifiedCount;
+      document.getElementById('chipCountPending').textContent = summary.pendingCount;
+      document.getElementById('chipCountRejected').textContent = summary.rejectedCount;
+
+      const notAppChip = document.getElementById('chipNotApplicable');
+      if (summary.seminarOnly && summary.notApplicableCount > 0) {
+        notAppChip.style.display = 'inline-flex';
+        document.getElementById('chipCountNotApp').textContent = summary.notApplicableCount;
+      } else {
+        notAppChip.style.display = 'none';
+      }
+
+      document.getElementById('btnCopyMissingCount').textContent = summary.notPassedCount;
+    }
+
+    function copyMissingStudentList() {
+      const docType = document.getElementById('studentDocumentFilter').value;
+      const docName = currentComplianceSummary ? currentComplianceSummary.documentName : (document.getElementById('studentDocumentFilter').selectedOptions[0]?.text || 'Selected Document');
+
+      // Filter from loaded list all students who have not passed (missing or rejected)
+      const missingStudents = currentStudentsList.filter(s => {
+        if (s.spec_doc_key) {
+          return s.spec_doc_status === 'missing' || s.spec_doc_status === 'rejected';
+        }
+        return s.total_documents === 0 || !s.generated_file_id;
+      });
+
+      if (missingStudents.length === 0) {
+        App.showToast('All students in the current view have passed this document!');
+        return;
+      }
+
+      const sectionName = document.getElementById('studentSectionFilter').selectedOptions[0]?.text || 'All Sections';
+      const yearLevel = document.getElementById('studentYearLevelFilter').value || 'All Year Levels';
+
+      let text = `OLIVAREZ COLLEGE — 201-FILE SYSTEM\n`;
+      text += `Document: ${docName}\n`;
+      text += `Filter Scope: ${sectionName} | ${yearLevel}\n`;
+      text += `Total Students Not Passed: ${missingStudents.length}\n`;
+      text += `Date: ${new Date().toLocaleString()}\n`;
+      text += `--------------------------------------------------------\n\n`;
+
+      missingStudents.forEach((s, idx) => {
+        const studentId = s.student_id || 'NO_ID';
+        const name = `${s.last_name || ''}, ${s.first_name || ''} ${s.middle_name || ''}`.trim();
+        const section = s.section_name ? `Section ${s.section_name}` : 'Unassigned';
+        const status = s.spec_doc_status_label || (s.spec_doc_status === 'rejected' ? 'Rejected' : 'Missing');
+        text += `${idx + 1}. [${studentId}] ${name} (${section}, ${s.year_level || '1st Year'}) — ${status} — Email: ${s.email}\n`;
+      });
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          App.showToast(`Copied list of ${missingStudents.length} students who have not passed!`);
+        }).catch(() => {
+          fallbackCopyText(text);
+        });
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      App.showToast('Missing students list copied to clipboard!');
+    }
+
+    function exportStudentsCsv() {
+      if (!currentStudentsList || currentStudentsList.length === 0) {
+        App.showToast('No student records to export.', 'warning');
+        return;
+      }
+
+      const docType = document.getElementById('studentDocumentFilter').value;
+      const docName = currentComplianceSummary ? currentComplianceSummary.documentName : (docType === 'all' ? 'All Documents' : docType);
+      const statusFilter = document.getElementById('studentDocStatusFilter').value;
+
+      const headers = [
+        'Student ID',
+        'Last Name',
+        'First Name',
+        'Middle Name',
+        'Year Level',
+        'Section',
+        'Email',
+        'Target Document',
+        'Compliance Status',
+        'Passed',
+        'Latest File',
+        'Total 201 Docs'
+      ];
+
+      const rows = currentStudentsList.map(s => {
+        const isPassed = s.spec_doc_key ? (s.spec_doc_is_passed ? 'YES' : 'NO') : (s.verified_documents > 0 ? 'YES' : 'NO');
+        const docStatus = s.spec_doc_status_label || (s.pending_documents > 0 ? 'Pending' : (s.verified_documents > 0 ? 'Verified' : 'Missing'));
+        const fileName = s.spec_doc_latest_filename || s.file_name || 'None';
+
+        return [
+          `"${(s.student_id || '').replace(/"/g, '""')}"`,
+          `"${(s.last_name || '').replace(/"/g, '""')}"`,
+          `"${(s.first_name || '').replace(/"/g, '""')}"`,
+          `"${(s.middle_name || '').replace(/"/g, '""')}"`,
+          `"${(s.year_level || '1st Year').replace(/"/g, '""')}"`,
+          `"${(s.section_name || 'Unassigned').replace(/"/g, '""')}"`,
+          `"${(s.email || '').replace(/"/g, '""')}"`,
+          `"${docName.replace(/"/g, '""')}"`,
+          `"${docStatus.replace(/"/g, '""')}"`,
+          `"${isPassed}"`,
+          `"${fileName.replace(/"/g, '""')}"`,
+          s.total_documents || 0
+        ].join(',');
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `students_${docType}_${statusFilter}_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      App.showToast(`Exported ${currentStudentsList.length} student records to CSV!`);
+    }
+
+    function resetStudentFilters() {
+      document.getElementById('studentSearchInput').value = '';
+      document.getElementById('studentSectionFilter').value = 'all';
+      document.getElementById('studentYearLevelFilter').value = 'all';
+      document.getElementById('studentDocumentFilter').value = 'all';
+      onDocumentCategoryChange();
     }
 
     async function loadStudents() {
       const query = document.getElementById('studentSearchInput').value;
       const sectionId = document.getElementById('studentSectionFilter').value;
       const yearLevel = (document.getElementById('studentYearLevelFilter') || {}).value || 'all';
-      const status = (document.getElementById('studentDocStatusFilter') || {}).value || 'all';
+      const documentType = (document.getElementById('studentDocumentFilter') || {}).value || 'all';
+      const docStatus = (document.getElementById('studentDocStatusFilter') || {}).value || 'all';
 
       try {
-        const url = `/api/students?query=${encodeURIComponent(query)}&sectionId=${encodeURIComponent(sectionId)}&yearLevel=${encodeURIComponent(yearLevel)}&status=${encodeURIComponent(status)}`;
+        const url = `/api/students?query=${encodeURIComponent(query)}&sectionId=${encodeURIComponent(sectionId)}&yearLevel=${encodeURIComponent(yearLevel)}&documentType=${encodeURIComponent(documentType)}&docStatus=${encodeURIComponent(docStatus)}`;
         const res = await fetch(url);
         const students = await res.json();
+        currentStudentsList = Array.isArray(students) ? students : [];
+
+        const countElem = document.getElementById('studentResultCount');
+        if (countElem) countElem.textContent = currentStudentsList.length;
 
         const tbody = document.getElementById('studentsTableTbody');
         if (!students || students.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching student records found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No matching student records found for the selected document and status filters.</td></tr>';
           return;
         }
+
+        const isSpecific = documentType !== 'all';
 
         tbody.innerHTML = students.map(s => {
           const initials = ((s.first_name || '')[0] || '') + ((s.last_name || '')[0] || '');
 
-          // Document Progress Badge
-          let docBadge = '<span class="badge badge-status-missing" style="font-size: 0.72rem;">No Uploads</span>';
-          if (s.rejected_documents > 0) {
-            docBadge = `<span class="badge badge-status-rejected" style="font-size: 0.72rem;">⚠️ ${s.rejected_documents} Action Required</span>`;
-          } else if (s.pending_documents > 0) {
-            docBadge = `<span class="badge badge-status-uploaded" style="font-size: 0.72rem;">⏳ ${s.pending_documents} Pending</span>`;
-          } else if (s.verified_documents > 0) {
-            docBadge = `<span class="badge badge-status-verified" style="font-size: 0.72rem;">✓ ${s.verified_documents} Verified</span>`;
+          // Determine Document Cell content
+          let docCellHtml = '';
+
+          if (isSpecific && s.spec_doc_key) {
+            let badgeHtml = '';
+            if (s.spec_doc_status === 'verified') {
+              badgeHtml = '<span class="badge badge-status-verified" style="font-size: 0.76rem;">Passed (Verified)</span>';
+            } else if (s.spec_doc_status === 'uploaded') {
+              badgeHtml = '<span class="badge badge-status-uploaded" style="font-size: 0.76rem;">Passed (Pending Review)</span>';
+            } else if (s.spec_doc_status === 'rejected') {
+              badgeHtml = '<span class="badge badge-status-rejected" style="font-size: 0.76rem;">Requires Resubmission</span>';
+            } else if (s.spec_doc_status === 'not_applicable') {
+              badgeHtml = '<span class="badge badge-secondary" style="font-size: 0.76rem;">Not Required (1st/2nd Yr)</span>';
+            } else {
+              badgeHtml = '<span class="badge badge-status-missing" style="font-size: 0.76rem; background: #fee2e2; color: #991b1b; border-color: #fca5a5;">Not Passed (Missing)</span>';
+            }
+
+            let fileActionHtml = '';
+            if (s.spec_doc_latest_id) {
+              const escapedName = escapeHtml(s.spec_doc_latest_filename || 'Document');
+              if (documentType === 'pis') {
+                fileActionHtml = `
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapedName}">
+                    ${escapedName}
+                  </div>
+                  <div style="display: flex; gap: 4px; margin-top: 4px;">
+                    <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.spec_doc_latest_id}, '${escapedName}')" style="padding: 2px 7px; font-size: 0.72rem;">
+                      View SIF
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="openStudentDocumentsModal(${s.id})" style="padding: 2px 7px; font-size: 0.72rem;">
+                      201 File
+                    </button>
+                  </div>
+                `;
+              } else {
+                fileActionHtml = `
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapedName}">
+                    ${escapedName}
+                  </div>
+                  <div style="display: flex; gap: 4px; margin-top: 4px;">
+                    <button class="btn btn-sm btn-secondary" onclick="previewAdminDocument(${s.spec_doc_latest_id}, '${escapedName}', '')" style="padding: 2px 7px; font-size: 0.72rem;">
+                      View File
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="openStudentDocumentsModal(${s.id})" style="padding: 2px 7px; font-size: 0.72rem;">
+                      201 File
+                    </button>
+                  </div>
+                `;
+              }
+            } else {
+              fileActionHtml = `
+                <div style="margin-top: 4px;">
+                  <button class="btn btn-sm btn-primary" onclick="openStudentDocumentsModal(${s.id})" style="padding: 2px 8px; font-size: 0.74rem;">
+                    Open 201 File
+                  </button>
+                </div>
+              `;
+            }
+
+            docCellHtml = `
+              <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+                ${badgeHtml}
+                ${fileActionHtml}
+              </div>
+            `;
+          } else {
+            // General all-documents badge
+            let docBadge = '<span class="badge badge-status-missing" style="font-size: 0.72rem;">No Uploads</span>';
+            if (s.rejected_documents > 0) {
+              docBadge = `<span class="badge badge-status-rejected" style="font-size: 0.72rem;">${s.rejected_documents} Action Required</span>`;
+            } else if (s.pending_documents > 0) {
+              docBadge = `<span class="badge badge-status-uploaded" style="font-size: 0.72rem;">${s.pending_documents} Pending</span>`;
+            } else if (s.verified_documents > 0) {
+              docBadge = `<span class="badge badge-status-verified" style="font-size: 0.72rem;">${s.verified_documents} Verified</span>`;
+            }
+
+            docCellHtml = `
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                <div>${docBadge}</div>
+                <button class="btn btn-sm btn-primary" onclick="openStudentDocumentsModal(${s.id})" style="padding: 3px 10px; font-size: 0.78rem;">
+                  Open 201 File
+                </button>
+              </div>
+            `;
           }
 
           return `
@@ -1463,32 +2070,25 @@
               <td><span class="badge badge-secondary">${s.year_level || '1st Year'}</span></td>
               <td>${s.email}</td>
               <td><span class="badge badge-primary">Section ${s.section_name || 'Unassigned'}</span></td>
-              <td>
-                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                  <div>${docBadge}</div>
-                  <button class="btn btn-sm btn-primary" onclick="openStudentDocumentsModal(${s.id})" style="padding: 3px 10px; font-size: 0.78rem;">
-                    📁 Open 201 File
-                  </button>
-                </div>
-              </td>
+              <td>${docCellHtml}</td>
               <td>
                 ${s.generated_file_id ? `
                   <a href="javascript:void(0)" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" style="font-weight: 600; color: var(--primary);">
-                    📄 ${s.file_name}
+                    ${s.file_name}
                   </a>
                 ` : '<span class="badge badge-warning">Pending</span>'}
               </td>
               <td style="text-align: right; white-space: nowrap;">
                 ${s.generated_file_id ? `
-                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE PDF">⬇</a>
-                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE PDF">👁</button>
-                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF">🔄</button>
-                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File">🗑</button>
+                  <a href="/api/files/sif/${s.generated_file_id}/download" class="btn btn-sm btn-primary" title="Download 201-FILE PDF">Download</a>
+                  <button class="btn btn-sm btn-secondary" onclick="previewSIF(${s.generated_file_id}, '${s.file_name}')" title="Preview 201-FILE PDF">View</button>
+                  <button class="btn btn-sm btn-secondary" onclick="regenerateStudentPDF(${s.id})" title="Re-Generate SIF PDF">Regen</button>
+                  <button class="btn btn-sm btn-danger" onclick="removeStudentFile(${s.generated_file_id}, '${s.file_name}')" title="Remove SIF File">Remove</button>
                 ` : `
-                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id})" title="Generate Official 201-FILE PDF">💾 SIF</button>
+                  <button class="btn btn-sm btn-primary" onclick="regenerateStudentPDF(${s.id})" title="Generate Official 201-FILE PDF">Generate SIF</button>
                 `}
                 <button class="btn btn-sm btn-secondary" onclick="openMoveStudentModal(${s.id}, '${s.first_name} ${s.last_name}', ${s.section_id})" title="Move Section">⇄</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">✕</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStudentRecord(${s.id}, '${s.first_name} ${s.last_name}')" title="Delete Student Record">Delete</button>
               </td>
             </tr>
           `;
@@ -1558,7 +2158,7 @@
         if (cat.seminarOnly && !cat.isEligible) {
           html += `
             <div class="seminar-locked-card" style="margin-bottom: 1rem; padding: 1.15rem;">
-              <div class="seminar-locked-icon" style="font-size: 1.25rem; width: 36px; height: 36px;">🔒</div>
+              <div class="seminar-locked-icon" style="font-size: 0.85rem; font-weight: 700; width: auto; padding: 0.25rem 0.6rem; height: auto;">LOCKED</div>
               <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                   <strong style="font-size: 0.95rem; color: #475569;">Certificates of Seminars</strong>
@@ -1580,7 +2180,7 @@
 
         if (cat.status === 'verified') {
           statusBadgeClass = 'badge-status-verified';
-          statusBadgeText = 'Verified ✓';
+          statusBadgeText = 'Verified';
           statusCardClass = 'status-verified';
         } else if (cat.status === 'uploaded') {
           statusBadgeClass = 'badge-status-uploaded';
@@ -1588,7 +2188,7 @@
           statusCardClass = 'status-uploaded';
         } else if (cat.status === 'rejected') {
           statusBadgeClass = 'badge-status-rejected';
-          statusBadgeText = 'Action Required ⚠️';
+          statusBadgeText = 'Action Required';
           statusCardClass = 'status-rejected';
         }
 
@@ -1628,7 +2228,7 @@
     // Helper: Render file row in Admin Modal
     function renderAdminFileItem(f, cat) {
       const isPdf = f.original_filename.toLowerCase().endsWith('.pdf');
-      const icon = isPdf ? '📄' : '🖼️';
+      const icon = isPdf ? 'PDF' : 'IMG';
 
       const formattedDate = f.uploaded_at ? new Date(f.uploaded_at).toLocaleDateString('en-US', {
         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -1645,16 +2245,16 @@
         return `
           <div class="doc-file-item">
             <div class="doc-file-info">
-              <span class="doc-file-icon">📄</span>
+              <span class="doc-file-icon" style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">PDF</span>
               <div class="doc-file-details">
                 <span class="doc-file-name">${f.original_filename}</span>
                 <span class="doc-file-meta">Auto-Generated Official 201-FILE PDF &bull; ${formattedDate}</span>
               </div>
             </div>
             <div class="doc-file-actions">
-              <span class="badge badge-status-verified" style="font-size: 0.7rem;">Official Form ✓</span>
-              <button class="btn btn-sm btn-secondary" onclick="previewSIF(${f.id}, '${f.original_filename}')">👁 View PDF</button>
-              <a href="/api/files/sif/${f.id}/download" class="btn btn-sm btn-primary">⬇ Download</a>
+              <span class="badge badge-status-verified" style="font-size: 0.7rem;">Official Form</span>
+              <button class="btn btn-sm btn-secondary" onclick="previewSIF(${f.id}, '${f.original_filename}')">View PDF</button>
+              <a href="/api/files/sif/${f.id}/download" class="btn btn-sm btn-primary">Download</a>
             </div>
           </div>
         `;
@@ -1662,9 +2262,9 @@
 
       let fileBadge = '<span class="badge badge-status-uploaded" style="font-size: 0.7rem;">Pending Review</span>';
       if (f.upload_status === 'verified') {
-        fileBadge = '<span class="badge badge-status-verified" style="font-size: 0.7rem;">Verified ✓</span>';
+        fileBadge = '<span class="badge badge-status-verified" style="font-size: 0.7rem;">Verified</span>';
       } else if (f.upload_status === 'rejected') {
-        fileBadge = '<span class="badge badge-status-rejected" style="font-size: 0.7rem;">Rejected ✕</span>';
+        fileBadge = '<span class="badge badge-status-rejected" style="font-size: 0.7rem;">Rejected</span>';
       }
 
       return `
@@ -1687,14 +2287,14 @@
           <div class="doc-file-actions">
             ${fileBadge}
             <button class="btn btn-sm btn-secondary" onclick="previewAdminDocument(${f.id}, '${escapeHtml(f.original_filename)}', '${f.mime_type || ''}')">
-              👁 View
+              View
             </button>
             <a href="/api/student/documents/${f.id}/download" class="btn btn-sm btn-secondary">
-              ⬇ Download
+              Download
             </a>
             ${f.upload_status !== 'verified' ? `
               <button class="btn btn-sm btn-success" style="background: #10b981; color: white;" onclick="handleAdminVerifyDocument(${f.id}, '${escapeHtml(f.original_filename)}')">
-                ✓ Verify
+                Verify
               </button>
             ` : `
               <button class="btn btn-sm btn-secondary" onclick="handleAdminResetStatus(${f.id}, '${escapeHtml(f.original_filename)}')">
@@ -1703,12 +2303,10 @@
             `}
             ${f.upload_status !== 'rejected' ? `
               <button class="btn btn-sm btn-danger" style="background: #ef4444; color: white;" onclick="openAdminRejectModal(${f.id}, '${escapeHtml(f.original_filename)}')">
-                ✕ Reject
+                Reject
               </button>
             ` : ''}
-            <button class="btn btn-sm btn-secondary" style="color: #dc2626;" onclick="handleAdminDeleteDoc(${f.id}, '${escapeHtml(f.original_filename)}')">
-              🗑
-            </button>
+            <button class="btn btn-sm btn-secondary" style="color: #dc2626;" onclick="handleAdminDeleteDoc(${f.id}, '${escapeHtml(f.original_filename)}')">Delete</button>
           </div>
         </div>
       `;
@@ -1729,7 +2327,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to update year level.');
 
-        App.showToast(`Verified Year Level updated to ${yearLevel}! ✓`);
+        App.showToast(`Verified Year Level updated to ${yearLevel}!`);
         await openStudentDocumentsModal(studentId);
         await loadStudents();
       } catch (err) {
@@ -1748,7 +2346,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to verify document.');
 
-        App.showToast(`Document "${docName}" marked as Verified! ✓`);
+        App.showToast(`Document "${docName}" marked as Verified!`);
         if (currentAdminStudentOverview) {
           await openStudentDocumentsModal(currentAdminStudentOverview.student.id);
         }
@@ -1808,7 +2406,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to reject document.');
 
-        App.showToast('Document marked as Rejected with remarks. Student notified! ✓');
+        App.showToast('Document marked as Rejected with remarks. Student notified!');
         App.closeModal('adminRejectDocModal');
         pendingRejectDocId = null;
         if (currentAdminStudentOverview) {
@@ -1829,7 +2427,7 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to delete document.');
 
-        App.showToast('Document removed from student record! ✓');
+        App.showToast('Document removed from student record!');
         if (currentAdminStudentOverview) {
           await openStudentDocumentsModal(currentAdminStudentOverview.student.id);
         }
@@ -1899,7 +2497,7 @@
           return;
         }
 
-        App.showToast('Student section updated successfully! ✓');
+        App.showToast('Student section updated successfully!');
         App.closeModal('moveStudentModal');
         await loadStudents();
         await loadSections();
@@ -1911,7 +2509,7 @@
 
     async function regenerateStudentPDF(studentId, sectionId, sectionName) {
       try {
-        App.showToast('Generating official 201-FILE PDF... ⏳');
+        App.showToast('Generating official 201-FILE PDF...');
         const res = await fetch(`/api/students/${studentId}/regenerate-pdf`, { method: 'POST' });
         const data = await res.json();
 
@@ -1920,7 +2518,7 @@
           return;
         }
 
-        App.showToast(data.message || '201-FILE PDF generated successfully! ✓');
+        App.showToast(data.message || '201-FILE PDF generated successfully!');
         if (sectionId && sectionName) {
           await viewSectionFiles(sectionId, sectionName);
         }
@@ -1987,7 +2585,7 @@
           return;
         }
 
-        App.showToast('Template uploaded successfully! ✓');
+        App.showToast('Template uploaded successfully!');
         App.closeModal('uploadTemplateModal');
         await loadTemplates();
       } catch (err) {
@@ -2072,7 +2670,7 @@
           return;
         }
 
-        App.showToast(data.message || 'Authorized user added! ✓');
+        App.showToast(data.message || 'Authorized user added!');
         App.closeModal('addUserModal');
         await loadUsers();
       } catch (err) {
@@ -2094,7 +2692,7 @@
           return;
         }
 
-        App.showToast(`User status updated to ${status} ✓`);
+        App.showToast(`User status updated to ${status}`);
         await loadUsers();
       } catch (err) {
         App.showToast('Network error updating user status', 'error');
@@ -2141,7 +2739,7 @@
           return false;
         }
 
-        App.showToast(`User role updated to ${role.toUpperCase()} ✓`);
+        App.showToast(`User role updated to ${role.toUpperCase()}`);
         await loadUsers();
         return true;
       } catch (err) {
@@ -2154,10 +2752,10 @@
       const input = document.getElementById(inputId);
       if (input.type === 'password') {
         input.type = 'text';
-        btn.textContent = '🙈';
+        btn.textContent = 'Hide';
       } else {
         input.type = 'password';
-        btn.textContent = '👁️';
+        btn.textContent = 'Show';
       }
     }
 
@@ -2174,7 +2772,7 @@
           return;
         }
 
-        App.showToast('User removed! ✓');
+        App.showToast('User removed!');
         await loadUsers();
       } catch (err) {
         App.showToast('Network error deleting user', 'error');

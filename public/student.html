@@ -111,7 +111,7 @@
   <!-- Inactivity Timeout Warning Modal -->
   <div id="inactivityModal" role="alertdialog" aria-modal="true" aria-labelledby="inactivityTitle">
     <div class="modal-box">
-      <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⏰</div>
+      <div style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-muted);">SESSION TIMEOUT</div>
       <h3 id="inactivityTitle">Session Expiring Soon</h3>
       <p>Your session will expire due to inactivity. For shared computer safety, you will be automatically signed out in:</p>
       <span id="inactivityCountdown">60</span>
@@ -142,13 +142,13 @@
 
           <!-- Replace Notice (for single-file categories) -->
           <div id="uploadReplaceNotice" style="display: none; background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #c2410c;">
-            ⚠️ <strong>Replacing File:</strong> Uploading a new file will replace the existing one in this category. The previous file will be removed.
+            <strong>Replacing File:</strong> Uploading a new file will replace the existing one in this category. The previous file will be removed.
           </div>
 
           <!-- Drag & Drop Zone -->
           <div class="dropzone-container" id="docDropzone" onclick="document.getElementById('docFileInput').click()">
             <input type="file" id="docFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" onchange="handleFileSelect(event)">
-            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
             <div class="dropzone-text">Click to browse or drag &amp; drop</div>
             <div class="dropzone-subtext">Accepted formats: PDF, JPG, PNG &bull; Max size: 10MB &bull; <em>Images are auto-compressed</em></div>
           </div>
@@ -156,12 +156,12 @@
           <!-- Selected File Preview -->
           <div id="selectedFileInfo" style="display: none; background: #f0fdf4; border: 1px solid var(--primary-border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-top: 1rem; display: none;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <span style="font-size: 1.5rem;">📄</span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">FILE</span>
               <div>
                 <div style="font-weight: 600; font-size: 0.9rem; color: var(--secondary);" id="selectedFileName">filename.pdf</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);" id="selectedFileSize">0 KB</div>
               </div>
-              <span style="margin-left: auto; color: #059669; font-size: 1.1rem;">✓</span>
+              <span style="margin-left: auto; color: #059669; font-size: 0.82rem; font-weight: 700;">Selected</span>
             </div>
           </div>
 
@@ -187,7 +187,7 @@
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h3 id="docViewerTitle" style="font-size: 1.15rem; margin: 0;">Document Preview</h3>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <a id="docViewerDownloadBtn" href="#" class="btn btn-sm btn-primary" download>⬇ Download</a>
+          <a id="docViewerDownloadBtn" href="#" class="btn btn-sm btn-primary" download>Download</a>
           <button class="modal-close" onclick="App.closeModal('docViewerModal')">&times;</button>
         </div>
       </div>
@@ -203,7 +203,7 @@
   <div class="modal-backdrop" id="confirmDeleteDocModal">
     <div class="modal-dialog" style="max-width: 440px;">
       <div class="modal-header">
-        <h3 style="color: #b91c1c;">🗑 Remove Document</h3>
+        <h3 style="color: #b91c1c;">Remove Document</h3>
         <button class="modal-close" onclick="App.closeModal('confirmDeleteDocModal')">&times;</button>
       </div>
       <div class="modal-body">
@@ -211,7 +211,7 @@
           Are you sure you want to remove <strong id="deleteDocNamePrompt">document.pdf</strong> from your 201 file?
         </p>
         <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.825rem; color: #991b1b;">
-          ⚠️ <strong>Note:</strong> This action cannot be undone. You will need to re-upload the document if it was removed by mistake. Documents that have been <strong>Verified</strong> by the administrator cannot be deleted.
+          <strong>Note:</strong> This action cannot be undone. You will need to re-upload the document if it was removed by mistake. Documents that have been <strong>Verified</strong> by the administrator cannot be deleted.
         </div>
       </div>
       <div class="modal-footer">
@@ -241,10 +241,10 @@
       </a>
 
       <ul class="nav-tabs">
-        <li><button class="nav-link active" onclick="showTab('dashboardTab', this)">📊 Dashboard</button></li>
-        <li><button class="nav-link" id="navDocsTabBtn" onclick="showTab('documentsTab', this)">📁 My 201 File</button></li>
-        <li><button class="nav-link" onclick="showTab('formTab', this)">📝 My Information Sheet</button></li>
-        <li><button class="nav-link" onclick="showTab('sifTab', this)">📄 Official 201-FILE PDF</button></li>
+        <li><button class="nav-link active" onclick="showTab('dashboardTab', this)">Dashboard</button></li>
+        <li><button class="nav-link" id="navDocsTabBtn" onclick="showTab('documentsTab', this)">My 201 File</button></li>
+        <li><button class="nav-link" onclick="showTab('formTab', this)">My Information Sheet</button></li>
+        <li><button class="nav-link" onclick="showTab('sifTab', this)">Official 201-FILE PDF</button></li>
       </ul>
 
       <div class="user-profile">
@@ -271,14 +271,14 @@
           <p>Official 201-FILE Portal for BSIT Students.</p>
         </div>
         <button class="btn" style="background: #ffffff; color: #064e3b; font-weight: 700;" onclick="showTab('formTab')">
-          📝  Open 201-FILE Form
+          Open 201-FILE Form
         </button>
       </div>
 
       <!-- Overview Cards -->
       <div class="kpi-grid">
         <div class="kpi-card emerald">
-          <div class="kpi-icon green">📁</div>
+          <div class="kpi-icon green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
           <div class="kpi-info">
             <h3 id="dashSectionDisplay">—</h3>
             <p>Assigned Section</p>
@@ -294,7 +294,7 @@
         </div>
 
         <div class="kpi-card amber">
-          <div class="kpi-icon amber">📄</div>
+          <div class="kpi-icon amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
           <div class="kpi-info">
             <h3 id="dashSifStatusDisplay">Pending</h3>
             <p>201-FILE Status</p>
@@ -306,7 +306,7 @@
       <div class="card" style="margin-bottom: 1.75rem; border-left: 4px solid var(--primary);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
           <div>
-            <h3 style="font-size: 1.2rem; margin-bottom: 0.25rem;">📁 201-File Document Checklist</h3>
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.25rem;">201-File Document Checklist</h3>
             <p style="color: var(--text-muted); font-size: 0.875rem; margin: 0;">
               Track the submission status of your required student 201-file documents.
             </p>
@@ -378,7 +378,7 @@
       <!-- Categories Container -->
       <div id="docCategoriesContainer">
         <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-          ⏳ Loading your 201-file documents...
+          Loading your 201-file documents...
         </div>
       </div>
     </div>
@@ -394,7 +394,7 @@
       </div>
 
       <div class="form-header-badge">
-        <span>ℹ</span>
+        <span>Note:</span>
         <span>
           Information submitted here is automatically mapped into the school's official PDF template and
           organized under your chosen Section.
@@ -406,7 +406,7 @@
 
           <!-- Section Selector (Dynamic) -->
           <div class="form-section-banner" style="background: linear-gradient(135deg, #0f172a, #334155);">
-            📂 Section & Academic Classification
+            Section & Academic Classification
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -446,7 +446,7 @@
                 style="width: 100px; height: 100px; border: 2px dashed var(--border); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; overflow: hidden; position: relative;">
                 <span id="photoPlaceholder"
                   style="font-size: 0.75rem; color: var(--text-muted); padding: 0.5rem; text-align: center;">
-                  📸<br><strong>1" x 1"</strong><br>(2.54 × 2.54 cm)
+                  <strong>1" x 1"</strong><br>(2.54 × 2.54 cm)
                 </span>
                 <img id="photoPreviewImg" src="" alt="1x1 Photo Preview"
                   style="width: 100%; height: 100%; object-fit: cover; display: none;">
@@ -462,9 +462,9 @@
                 <input type="file" id="studentPhotoInput" accept="image/png, image/jpeg, image/jpg"
                   style="display: none;" onchange="handlePhotoSelect(event)">
                 <button type="button" class="btn btn-sm btn-primary"
-                  onclick="document.getElementById('studentPhotoInput').click()">📷 Upload 1x1 Photo</button>
+                  onclick="document.getElementById('studentPhotoInput').click()">Upload 1x1 Photo</button>
                 <button type="button" class="btn btn-sm btn-secondary" id="clearPhotoBtn" onclick="clearPhoto()"
-                  style="display: none;">✕ Remove</button>
+                  style="display: none;">Remove</button>
               </div>
             </div>
           </div>
@@ -801,13 +801,13 @@
 
           <div class="edu-card" style="background: #f0fdf4; border: 1px solid #bbf7d0; margin-bottom: 1.5rem;">
             <div style="display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap;">
-              <div style="font-size: 2.25rem;">📁</div>
+              <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">201 FILE</div>
               <div style="flex: 1; min-width: 260px;">
                 <h4 style="margin: 0 0 0.35rem 0; color: #065f46; font-size: 1.05rem;">Student 201-File Document Repository</h4>
                 <p style="margin: 0; color: #166534; font-size: 0.875rem; line-height: 1.45;">
                   Saving this form registers your <strong>Section</strong> and <strong>Student ID</strong>, creating your official 201 folder. 
                   You can upload your required documents (Curriculum, Data Privacy, COM, Grades, and Seminar Certificates) under the 
-                  <strong>"📁 My 201 File"</strong> tab.
+                  <strong>"My 201 File"</strong> tab.
                 </p>
               </div>
               <button type="button" class="btn btn-primary btn-sm" onclick="showTab('documentsTab', document.getElementById('navDocsTabBtn'))" style="white-space: nowrap;">
@@ -820,7 +820,7 @@
           <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
             <button type="submit" class="btn btn-primary" id="submitFormBtn"
               style="padding: 0.85rem 2.25rem; font-size: 1rem;">
-              💾 Save & Generate Official 201-FILE PDF
+              Save & Generate Official 201-FILE PDF
             </button>
           </div>
         </form>
@@ -870,7 +870,7 @@
         compressClientPhoto(rawDataUrl, (optimizedDataUrl) => {
           currentPhotoBase64 = optimizedDataUrl || rawDataUrl;
           displayPhotoPreview(currentPhotoBase64);
-          App.showToast('1" x 1" Photo uploaded & optimized! ✓');
+          App.showToast('1" x 1" Photo uploaded & optimized!');
         });
       };
       reader.readAsDataURL(file);
@@ -1069,15 +1069,15 @@
 
           if (currentStudent.generated_file_id) {
             currentFileId = currentStudent.generated_file_id;
-            document.getElementById('dashSifStatusDisplay').innerHTML = '<span class="badge badge-success">Generated ✓</span>';
+            document.getElementById('dashSifStatusDisplay').innerHTML = '<span class="badge badge-success">Generated</span>';
             document.getElementById('sifStatusDesc').innerHTML = `
               Your Official 201-FILE PDF <strong>${currentStudent.file_name}</strong> is generated and organized under section <strong>${currentStudent.section_name}</strong>.
             `;
             document.getElementById('sifActionsContainer').innerHTML = `
               <div style="display: flex; gap: 0.85rem; flex-wrap: wrap;">
-                <a href="/api/files/sif/${currentFileId}/download" class="btn btn-primary">⬇ Download 201-FILE PDF</a>
-                <button class="btn btn-secondary" onclick="showTab('sifTab')">👁  Preview Document</button>
-                <button class="btn btn-secondary" onclick="showTab('formTab')">œ Edit Information</button>
+                <a href="/api/files/sif/${currentFileId}/download" class="btn btn-primary">Download 201-FILE PDF</a>
+                <button class="btn btn-secondary" onclick="showTab('sifTab')">Preview Document</button>
+                <button class="btn btn-secondary" onclick="showTab('formTab')">Edit Information</button>
               </div>
             `;
 
@@ -1171,7 +1171,7 @@
 
     function renderSifViewer(fileId, fileName, sectionName) {
       document.getElementById('sifDownloadHeaderBtns').innerHTML = `
-        <a href="/api/files/sif/${fileId}/download" class="btn btn-primary">⬇ Download Official PDF</a>
+        <a href="/api/files/sif/${fileId}/download" class="btn btn-primary">Download Official PDF</a>
       `;
 
       document.getElementById('sifPreviewContent').innerHTML = `
@@ -1192,7 +1192,7 @@
       e.preventDefault();
       const submitBtn = document.getElementById('submitFormBtn');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '⏳ Generating Official 201-FILE PDF...';
+      submitBtn.innerHTML = 'Generating Official 201-FILE PDF...';
 
       const formData = {
         photoBase64: currentPhotoBase64,
@@ -1259,15 +1259,15 @@
         if (!res.ok) {
           App.showToast(result.error || 'Failed to submit form', 'error');
           submitBtn.disabled = false;
-          submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
+          submitBtn.innerHTML = 'Save & Generate Official 201-FILE PDF';
           return;
         }
 
-        App.showToast('201-FILE PDF generated and filed successfully! ✓');
+        App.showToast('201-FILE PDF generated and filed successfully!');
         await loadStudentData();
         await loadStudentDocuments();
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
+        submitBtn.innerHTML = 'Save & Generate Official 201-FILE PDF';
         
         // Switch to SIF Preview Tab and activate nav tab
         const sifNavBtn = document.querySelector('button[onclick*="sifTab"]');
@@ -1276,7 +1276,7 @@
         console.error('Submit error:', err);
         App.showToast('Error: ' + (err.message || 'Network error during form submission.'), 'error');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '💾 Save & Generate Official 201-FILE PDF';
+        submitBtn.innerHTML = 'Save & Generate Official 201-FILE PDF';
       }
     }
 
@@ -1340,7 +1340,7 @@
         if (dashBar) dashBar.style.width = '0%';
         if (summary) {
           summary.innerHTML = `
-            <span style="color: #b45309; font-weight: 600;">⚠️ Information Sheet Required: Please fill out your <strong>Personal Information Sheet</strong> to select your Section and activate your 201-file cabinet.</span>
+            <span style="color: #b45309; font-weight: 600;">Information Sheet Required: Please fill out your <strong>Personal Information Sheet</strong> to select your Section and activate your 201-file cabinet.</span>
           `;
         }
         return;
@@ -1354,7 +1354,7 @@
           <span><strong>${ch.percentage}%</strong> Overall Completion</span>
           <span><strong style="color: var(--success);">${ch.completedCount}</strong> Verified</span>
           <span><strong style="color: #2563eb;">${ch.pendingCount}</strong> Pending Review</span>
-          ${ch.rejectedCount > 0 ? `<span style="color: #dc2626; font-weight: 700;">⚠️ ${ch.rejectedCount} Action Required</span>` : ''}
+          ${ch.rejectedCount > 0 ? `<span style="color: #dc2626; font-weight: 700;">${ch.rejectedCount} Action Required</span>` : ''}
           <span><strong>${ch.missingCount}</strong> Missing</span>
         `;
       }
@@ -1374,7 +1374,7 @@
 
         container.innerHTML = `
           <div class="card" style="text-align: center; padding: 3rem 1.5rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-md); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <div style="font-size: 3rem; margin-bottom: 0.75rem;">📋</div>
+            <div style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--primary);">PERSONAL INFORMATION SHEET</div>
             <h3 style="color: #92400e; margin-bottom: 0.5rem; font-size: 1.35rem;">Information Sheet Submission Required First</h3>
             <p style="color: #78350f; max-width: 560px; margin: 0 auto 1.5rem auto; font-size: 0.95rem; line-height: 1.6;">
               Before you can upload required 201-file documents, you must first complete and submit your 
@@ -1383,7 +1383,7 @@
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
               <button class="btn btn-primary" onclick="showTab('formTab')">
-                📝 Go to Personal Information Sheet →
+                Go to Personal Information Sheet &rarr;
               </button>
             </div>
           </div>
@@ -1408,7 +1408,7 @@
         if (cat.seminarOnly && !cat.isEligible) {
           html += `
             <div class="seminar-locked-card">
-              <div class="seminar-locked-icon">🔒</div>
+              <div class="seminar-locked-icon" style="font-size: 0.75rem; font-weight: 700;">LOCKED</div>
               <div style="flex: 1;">
                 <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
                   <h3 style="font-size: 1.1rem; margin: 0; color: #475569;">Certificates of Seminars</h3>
@@ -1431,7 +1431,7 @@
 
         if (cat.status === 'verified') {
           statusBadgeClass = 'badge-status-verified';
-          statusBadgeText = 'Verified ✓';
+          statusBadgeText = 'Verified';
           statusCardClass = 'status-verified';
         } else if (cat.status === 'uploaded') {
           statusBadgeClass = 'badge-status-uploaded';
@@ -1439,19 +1439,12 @@
           statusCardClass = 'status-uploaded';
         } else if (cat.status === 'rejected') {
           statusBadgeClass = 'badge-status-rejected';
-          statusBadgeText = 'Action Required ⚠️';
+          statusBadgeText = 'Action Required';
           statusCardClass = 'status-rejected';
         }
 
         // Category icon mapping
-        let catIcon = '📁';
-        if (cat.key === 'pis') catIcon = '📝';
-        if (cat.key === 'curriculum') catIcon = '🎓';
-        if (cat.key === 'data_privacy') catIcon = '🛡️';
-        if (cat.key === 'com') catIcon = '📋';
-        if (cat.key === 'grades') catIcon = '📊';
-        if (cat.key === 'return_slips') catIcon = '✉️';
-        if (cat.key === 'seminar_certificates') catIcon = '📜';
+        let catIcon = '';
 
         // Check if any file has rejection remarks
         const rejectedFileWithRemarks = (cat.files || []).find(f => f.admin_remarks && f.admin_remarks.trim());
@@ -1479,7 +1472,7 @@
 
             ${rejectedFileWithRemarks ? `
               <div class="doc-remarks-box">
-                <span style="font-size: 1.1rem;">⚠️</span>
+                <span class="badge badge-danger">Action Required</span>
                 <div>
                   <strong>Administrator Remarks:</strong> ${escapeHtml(rejectedFileWithRemarks.admin_remarks)}
                   <div style="margin-top: 4px; font-size: 0.78rem;">Please upload a corrected document addressing the remarks above.</div>
@@ -1510,7 +1503,7 @@
       if (cat.key === 'pis') {
         return `
           <button class="btn btn-sm btn-secondary" onclick="showTab('formTab')">
-            📝 Edit Information Sheet
+                <button class="btn btn-secondary" onclick="showTab('formTab')">Edit Information</button>
           </button>
         `;
       }
@@ -1518,7 +1511,7 @@
       if (cat.filesCount === 0) {
         return `
           <button class="btn btn-sm btn-primary" onclick="openUploadDocModal('${cat.key}', '${escapeHtml(cat.name)}', ${cat.isMultiFile}, false)">
-            📤 Upload File
+            Upload File
           </button>
         `;
       }
@@ -1535,14 +1528,14 @@
       if (cat.status === 'verified') {
         return `
           <span style="font-size: 0.75rem; color: var(--success); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-            🔒 Verified & Locked
+            Verified & Locked
           </span>
         `;
       }
 
       return `
         <button class="btn btn-sm btn-secondary" onclick="openUploadDocModal('${cat.key}', '${escapeHtml(cat.name)}', false, true)">
-          🔄 Replace File
+          Replace File
         </button>
       `;
     }
@@ -1550,13 +1543,13 @@
     // Helper: Render individual file row
     function renderFileItem(f, cat) {
       const isPdf = f.original_filename.toLowerCase().endsWith('.pdf');
-      const icon = isPdf ? '📄' : '🖼️';
+      const icon = isPdf ? 'PDF' : 'IMG';
 
       let fileStatusBadge = '<span class="badge badge-status-uploaded" style="font-size: 0.7rem;">Pending Review</span>';
       if (f.upload_status === 'verified') {
-        fileStatusBadge = '<span class="badge badge-status-verified" style="font-size: 0.7rem;">Verified ✓</span>';
+        fileStatusBadge = '<span class="badge badge-status-verified" style="font-size: 0.7rem;">Verified</span>';
       } else if (f.upload_status === 'rejected') {
-        fileStatusBadge = '<span class="badge badge-status-rejected" style="font-size: 0.7rem;">Rejected ✕</span>';
+        fileStatusBadge = '<span class="badge badge-status-rejected" style="font-size: 0.7rem;">Rejected</span>';
       }
 
       const formattedDate = f.uploaded_at ? new Date(f.uploaded_at).toLocaleDateString('en-US', {
@@ -1574,16 +1567,16 @@
         return `
           <div class="doc-file-item">
             <div class="doc-file-info">
-              <span class="doc-file-icon">📄</span>
+              <span class="doc-file-icon" style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">PDF</span>
               <div class="doc-file-details">
                 <span class="doc-file-name">${escapeHtml(f.original_filename)}</span>
                 <span class="doc-file-meta">Auto-Generated Official 201-FILE PDF &bull; ${formattedDate}</span>
               </div>
             </div>
             <div class="doc-file-actions">
-              <span class="badge badge-status-verified" style="font-size: 0.7rem;">Official Form ✓</span>
-              <button class="btn btn-sm btn-secondary" onclick="showTab('sifTab')">👁 Preview</button>
-              <a href="/api/files/sif/${f.id}/download" class="btn btn-sm btn-primary">⬇ Download</a>
+              <span class="badge badge-status-verified" style="font-size: 0.7rem;">Official Form</span>
+              <button class="btn btn-sm btn-secondary" onclick="showTab('sifTab')">Preview</button>
+              <a href="/api/files/sif/${f.id}/download" class="btn btn-sm btn-primary">Download</a>
             </div>
           </div>
         `;
@@ -1603,14 +1596,14 @@
           <div class="doc-file-actions">
             ${fileStatusBadge}
             <button class="btn btn-sm btn-secondary" onclick="previewDocument(${f.id}, '${escapeHtml(f.original_filename)}', '${f.mime_type || ''}')">
-              👁 View
+              View
             </button>
             <a href="/api/student/documents/${f.id}/download" class="btn btn-sm btn-secondary">
-              ⬇ Download
+              Download
             </a>
             ${canDelete ? `
               <button class="btn btn-sm btn-secondary" style="color: #dc2626;" onclick="promptDeleteDocument(${f.id}, '${escapeHtml(f.original_filename)}')" title="Delete file">
-                ✕
+                Delete
               </button>
             ` : ''}
           </div>
@@ -1735,7 +1728,7 @@
           throw new Error(result.error || 'Failed to upload document.');
         }
 
-        App.showToast(result.message || 'Document uploaded successfully! ✓');
+        App.showToast(result.message || 'Document uploaded successfully!');
         App.closeModal('uploadDocModal');
         await loadStudentDocuments();
       } catch (err) {
@@ -1747,7 +1740,7 @@
       }
     }
 
-    // Modal: Preview Document Inline
+                <button class="btn btn-secondary" onclick="showTab('sifTab')">Preview Document</button>
     function previewDocument(docId, fileName, mimeType) {
       document.getElementById('docViewerTitle').textContent = fileName;
       document.getElementById('docViewerDownloadBtn').href = `/api/student/documents/${docId}/download`;
@@ -1805,7 +1798,7 @@
           throw new Error(result.error || 'Failed to delete document.');
         }
 
-        App.showToast(result.message || 'Document removed successfully. ✓');
+        App.showToast(result.message || 'Document removed successfully.');
         App.closeModal('confirmDeleteDocModal');
         pendingDeleteDocId = null;
         await loadStudentDocuments();
